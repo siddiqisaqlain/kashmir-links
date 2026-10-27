@@ -1,0 +1,798 @@
+<title>Saqlain Siddiqi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="author" content="Saqlain Siddiqi">
+<style>
+/* Layout: a live painting of the valley fixed behind a quiet column of glass panels.
+   Window (scene + season card) first, then identity and links, then the year scrubber. */
+:root {
+  --bg: #E4E3DF;
+  --ink: #1C1B19;
+  --ink2: #55524C;
+  --ink3: #8A867E;
+  --glass: rgba(251, 250, 247, .78);
+  --glass2: rgba(255, 255, 255, .55);
+  --line: rgba(28, 27, 25, .12);
+  --accent: #D4501A;
+  --accent-ink: #FFFFFF;
+  --shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 10px 30px rgba(20, 24, 30, .16);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101216; --ink: #F1EFEA; --ink2: #B9B5AC; --ink3: #8A867E;
+    --glass: rgba(20, 23, 29, .70); --glass2: rgba(255,255,255,.06); --line: rgba(255,255,255,.14);
+    --accent: #FF7A3D; --accent-ink: #1C1B19;
+    --shadow: 0 1px 0 rgba(255,255,255,.07) inset, 0 12px 34px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101216; --ink: #F1EFEA; --ink2: #B9B5AC; --ink3: #8A867E;
+  --glass: rgba(20, 23, 29, .70); --glass2: rgba(255,255,255,.06); --line: rgba(255,255,255,.14);
+  --accent: #FF7A3D; --accent-ink: #1C1B19;
+  --shadow: 0 1px 0 rgba(255,255,255,.07) inset, 0 12px 34px rgba(0,0,0,.4);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.45; -webkit-font-smoothing: antialiased; }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.shell {
+  position: relative; z-index: 1; max-width: 1080px; margin: 0 auto;
+  padding-block: 16px 28px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.glass {
+  background: var(--glass); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25); backdrop-filter: blur(22px) saturate(1.25);
+}
+h1, h2, h3, p { margin: 0; }
+.eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); font-weight: 600; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* window: leaves the painting visible */
+.window { min-height: clamp(210px, 36vh, 400px); display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 14px; flex-wrap: wrap; }
+.season { display: flex; gap: 14px; align-items: center; padding: 14px 18px 14px 14px; max-width: 100%; }
+.ring { width: 56px; height: 56px; flex: none; }
+.ring circle { fill: none; stroke-width: 4; }
+.ring .tr { stroke: var(--line); }
+.ring .pr { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .5s ease; }
+.season h2 { font-size: 30px; line-height: 1; font-weight: 600; letter-spacing: -.02em; }
+.season .gloss { color: var(--ink2); font-size: 14px; margin-top: 3px; }
+.stamp { padding: 10px 14px; font-size: 12px; color: var(--ink2); font-variant-numeric: tabular-nums; display: grid; gap: 2px; text-align: right; }
+.stamp b { color: var(--ink); font-weight: 600; font-size: 13px; }
+.note { padding: 12px 16px; font-size: 14px; color: var(--ink2); margin-bottom: 12px; max-width: 64ch; }
+.note b { color: var(--ink); font-weight: 600; }
+
+.cols { display: grid; gap: 12px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 880px) { .cols { grid-template-columns: 380px 1fr; } .id { position: sticky; top: 16px; } }
+
+.id { padding: 22px; position: relative; overflow: hidden; }
+.id::before { content: ""; position: absolute; inset: 0; background-image: var(--lat); background-size: 64px 64px; opacity: .55; -webkit-mask-image: linear-gradient(160deg, #000 0, transparent 46%); mask-image: linear-gradient(160deg, #000 0, transparent 46%); pointer-events: none; }
+.id > * { position: relative; }
+.mark { width: 52px; height: 52px; border-radius: 14px; background: var(--ink); display: grid; place-items: center; }
+.mark svg { width: 34px; height: 34px; }
+.id h1 { font-size: 30px; line-height: 1.05; letter-spacing: -.025em; font-weight: 650; margin-top: 18px; text-wrap: balance; }
+.id .role { color: var(--ink2); margin-top: 8px; font-size: 15px; }
+.facts { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.facts li { display: grid; grid-template-columns: 78px 1fr; gap: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+.facts span { color: var(--ink3); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding-top: 2px; font-weight: 600; }
+.acts { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+.btn { appearance: none; border: 1px solid var(--line); background: var(--glass2); border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 550; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; min-height: 44px; transition: transform .12s ease, background .15s; }
+.btn:hover { background: var(--glass); }
+.btn:active { transform: scale(.97); }
+.btn svg { width: 16px; height: 16px; }
+
+.links { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; min-width: 0; }
+.links li { position: relative; }
+.card { display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; padding: 14px 56px 14px 14px; color: inherit; text-decoration: none; min-height: 72px; transition: transform .16s ease, border-color .16s; }
+.card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.card:active { transform: scale(.985); }
+.card .ico { width: 44px; height: 44px; border-radius: 12px; background: var(--ink); color: var(--bg); display: grid; place-items: center; }
+.card .ico svg { width: 22px; height: 22px; }
+.card h3 { font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+.card p { font-size: 13px; color: var(--ink2); overflow-wrap: anywhere; }
+.card .go { width: 18px; height: 18px; color: var(--ink3); }
+.cp { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: var(--ink3); cursor: pointer; display: grid; place-items: center; }
+.cp:hover { background: var(--glass2); color: var(--ink); }
+.cp svg { width: 17px; height: 17px; }
+.card .go { display: none; }
+.feat { padding: 0; overflow: hidden; }
+.feat .card { grid-template-columns: 1fr; padding: 0; }
+.feat .art { height: 120px; position: relative; background: var(--ink); }
+.feat .art canvas { width: 100%; height: 100%; display: block; }
+.feat .body { padding: 14px 56px 16px 16px; display: grid; gap: 3px; }
+.feat .tag { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.feat h3 { font-size: 20px; letter-spacing: -.02em; }
+.feat.soon .card { cursor: default; }
+.feat.soon .card:hover { transform: none; border-color: transparent; }
+.pill { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); width: fit-content; }
+.pill.mute { background: var(--glass2); color: var(--ink2); border: 1px solid var(--line); }
+
+.scrub { margin-top: 12px; padding: 16px 18px; display: grid; gap: 12px; }
+.scrub .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.scrub output { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px; }
+.months { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .08em; color: var(--ink3); text-transform: uppercase; padding: 0 2px; }
+.seg { display: inline-grid; grid-auto-flow: column; background: var(--glass2); border: 1px solid var(--line); border-radius: 11px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; padding: 8px 14px; min-height: 36px; border-radius: 8px; font-size: 13px; font-weight: 550; color: var(--ink2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.ctl { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; margin: 0; cursor: pointer; --p: 50%; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(90deg, var(--accent) var(--p), var(--line) var(--p)); }
+input[type=range]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--line); }
+input[type=range]::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--accent); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 1px solid rgba(0,0,0,.18); box-shadow: 0 2px 6px rgba(0,0,0,.28); margin-top: -10px; }
+input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 1px solid rgba(0,0,0,.18); box-shadow: 0 2px 6px rgba(0,0,0,.28); }
+
+footer { margin-top: 18px; text-align: center; font-size: 12px; color: var(--ink2); }
+footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; background: var(--glass); border: 1px solid var(--line); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+
+.sheet { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(10, 12, 16, .5); padding: 16px; }
+.sheet[hidden] { display: none !important; }
+.sheet .box { background: var(--bg); border: 1px solid var(--line); border-radius: 22px; padding: 22px; width: min(340px, 100%); text-align: center; display: grid; gap: 12px; justify-items: center; box-shadow: var(--shadow); }
+.sheet #qr { background: #fff; padding: 14px; border-radius: 14px; line-height: 0; }
+.sheet #qr canvas, .sheet #qr img { width: 200px; height: 200px; max-width: 100%; }
+.sheet small { color: var(--ink2); font-size: 12px; overflow-wrap: anywhere; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: 13px; font-weight: 550; z-index: 30; transition: .22s; pointer-events: none; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 699px) {
+  .window { min-height: 38vh; flex-wrap: nowrap; align-items: flex-end; gap: 8px; }
+  .season { padding: 10px 14px 10px 10px; gap: 10px; }
+  .ring { width: 44px; height: 44px; }
+  .season h2 { font-size: 24px; }
+  .season .gloss { font-size: 13px; margin-top: 1px; }
+  .stamp { padding: 8px 10px; font-size: 11px; }
+  .stamp b { font-size: 12px; }
+  #stLight { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<div class="shell">
+  <section class="window" aria-label="Kashmir today">
+    <div class="season glass">
+      <svg class="ring" viewBox="0 0 56 56" aria-hidden="true"><circle class="tr" cx="28" cy="28" r="24"/><circle class="pr" id="ringP" cx="28" cy="28" r="24" transform="rotate(-90 28 28)"/></svg>
+      <div>
+        <p class="eyebrow" id="sEye">Kashmir now</p>
+        <h2 id="sName">Harud</h2>
+        <p class="gloss" id="sGloss">Autumn</p>
+      </div>
+    </div>
+    <div class="stamp glass" aria-live="polite">
+      <b id="stDate">28 Oct</b>
+      <span id="stDay">Day 301 of 365</span>
+      <span id="stLight">Daylight about 10 h 25 m</span>
+    </div>
+  </section>
+  <p class="note glass" id="note"></p>
+
+  <div class="cols">
+    <header class="id glass">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48"><g fill="none" stroke="var(--bg)" stroke-width="3" stroke-linejoin="round"><rect x="9" y="9" width="30" height="30"/><rect x="9" y="9" width="30" height="30" transform="rotate(45 24 24)"/></g><circle fill="var(--accent)" cx="24" cy="24" r="4.8"/></svg>
+      </div>
+      <h1>Saqlain Siddiqi</h1>
+      <p class="role">Architecture student, heritage documentation, computational pattern work.</p>
+      <ul class="facts">
+        <li><span>Studying</span><div>B.Arch, IUST Awantipora</div></li>
+        <li><span>Working</span><div>Heritage documentation with The Barakat Trust (UK) and IUST Architecture</div></li>
+        <li><span>Based in</span><div>Kashmir</div></li>
+      </ul>
+      <div class="acts">
+        <button class="btn" id="bCopy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>Copy page link</button>
+        <button class="btn" id="bQr" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20v1"/></svg>QR code</button>
+      </div>
+    </header>
+    <main><ul class="links" id="links"></ul></main>
+  </div>
+
+  <section class="scrub glass" aria-label="Look at another day of the year">
+    <div class="row"><p class="eyebrow">Walk through the year</p><output id="scOut" for="sc">Today</output></div>
+    <input type="range" id="sc" min="0" max="364" step="1" value="0" aria-label="Day of the year">
+    <div class="months" aria-hidden="true"><span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span></div>
+    <div class="ctl">
+      <div class="seg" role="group" aria-label="Time of day"><button type="button" data-t="live" aria-pressed="true">Live clock</button><button type="button" data-t="day" aria-pressed="false">Day</button><button type="button" data-t="night" aria-pressed="false">Night</button></div>
+      <button class="btn" id="bToday" type="button">Back to today</button>
+    </div>
+  </section>
+
+  <footer><span>&copy; 2026 Saqlain Siddiqi &middot; Painted live, in the browser</span></footer>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-label="QR code">
+  <div class="box">
+    <p class="eyebrow">Scan to open</p>
+    <div id="qr"></div>
+    <small id="qrUrl"></small>
+    <button class="btn" id="qClose" type="button">Close</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Edit here: your links. Empty url = hidden (or "soon" for the featured one). ---------- */
+  var LINKS = [
+    { title: "Pinjrakari Lab", text: "Islamic star patterns by Hankin's method, exported to CAD.", url: "", icon: "star", featured: true },
+    { title: "LinkedIn", text: "linkedin.com/in/saqlain-siddiqi", url: "https://www.linkedin.com/in/saqlain-siddiqi", icon: "in" },
+    { title: "Portfolio", text: "Selected architecture work", url: "", icon: "grid" },
+    { title: "Instagram", text: "Drawings and site notes", url: "", icon: "cam" },
+    { title: "Issuu", text: "Studio books and reports", url: "", icon: "book" }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- colour helpers ---------- */
+  var cc = {};
+  function rgb(h) {
+    if (Array.isArray(h)) return h;
+    if (cc[h]) return cc[h];
+    var n = parseInt(h.slice(1), 16);
+    return (cc[h] = [n >> 16, (n >> 8) & 255, n & 255]);
+  }
+  function mix(a, b, t) {
+    a = rgb(a); b = rgb(b);
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  }
+  function css(c, a) { return "rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + "," + (a == null ? 1 : a) + ")"; }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function sstep(a, b, v) { var t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
+
+  /* ---------- the year: anchors by day-of-year ---------- */
+  var ANCH = [
+    { d: 15,  skyT: "#9FB2C4", skyB: "#E6ECF0", far: "#8D9FB3", mid: "#6F8296", hill: "#DDE5EB", lake: "#7F97A6", grass: "#E8EEF2", leaf: "#8A6A4F", snow: 1.0,  dens: 0,   blos: 0,   flow: "#FFFFFF", fa: 0 },
+    { d: 75,  skyT: "#8FB5D6", skyB: "#DFE9EE", far: "#8FA3B8", mid: "#6F8A8A", hill: "#A8B98A", lake: "#7FA6B4", grass: "#9DB579", leaf: "#B8CF7A", snow: 0.72, dens: 0.3, blos: 0.5, flow: "#E7D24A", fa: 0.5 },
+    { d: 105, skyT: "#7FB0D8", skyB: "#DBE8EE", far: "#8399B0", mid: "#5F8570", hill: "#8FAE68", lake: "#6AA0B2", grass: "#8DB860", leaf: "#E9B6C4", snow: 0.55, dens: 0.8, blos: 1.0, flow: "#E2557A", fa: 1 },
+    { d: 135, skyT: "#6FA8DC", skyB: "#CFE4EE", far: "#7E98B0", mid: "#4F7F6A", hill: "#6F9B55", lake: "#5F9BB0", grass: "#7FB04B", leaf: "#5F9A3F", snow: 0.42, dens: 1.0, blos: 0.1, flow: "#E2557A", fa: 0.7 },
+    { d: 196, skyT: "#4F95D6", skyB: "#BCDCEA", far: "#7392AD", mid: "#3F6F56", hill: "#4F8442", lake: "#3F8AA0", grass: "#6A9A3A", leaf: "#3D7D33", snow: 0.14, dens: 1.0, blos: 0,   flow: "#EBC53A", fa: 0.8 },
+    { d: 258, skyT: "#7AA4C6", skyB: "#E4DCCB", far: "#8497AD", mid: "#5F7A5C", hill: "#8A8A45", lake: "#5F8FA0", grass: "#A39A4A", leaf: "#C9932A", snow: 0.3,  dens: 1.0, blos: 0,   flow: "#8B5FBF", fa: 0.25 },
+    { d: 300, skyT: "#7F9FC0", skyB: "#ECD3B0", far: "#8A96AB", mid: "#6D7355", hill: "#9A7A3C", lake: "#5F7F92", grass: "#A68A45", leaf: "#C0391B", snow: 0.46, dens: 0.9, blos: 0,   flow: "#8B5FBF", fa: 1 },
+    { d: 334, skyT: "#8EA1B5", skyB: "#E0D7CD", far: "#8C9AAA", mid: "#6C7275", hill: "#8C7E6C", lake: "#6F8494", grass: "#A89B85", leaf: "#8F4A2A", snow: 0.78, dens: 0.3, blos: 0,   flow: "#8B5FBF", fa: 0.1 }
+  ];
+  var COLK = ["skyT", "skyB", "far", "mid", "hill", "lake", "grass", "leaf", "flow"];
+  var NUMK = ["snow", "dens", "blos", "fa"];
+  function palette(doy) {
+    var n = ANCH.length, i, a, b, span, t, out = {};
+    var list = ANCH.concat([Object.assign({}, ANCH[0], { d: ANCH[0].d + 365 })]);
+    var x = doy < ANCH[0].d ? doy + 365 : doy;
+    for (i = 0; i < n; i++) if (x >= list[i].d && x <= list[i + 1].d) break;
+    a = list[i]; b = list[i + 1]; span = b.d - a.d; t = (x - a.d) / span;
+    t = t * t * (3 - 2 * t);
+    COLK.forEach(function (k) { out[k] = mix(a[k], b[k], t); });
+    NUMK.forEach(function (k) { out[k] = lerp(a[k], b[k], t); });
+    return out;
+  }
+
+  /* ---------- seasons of the valley ---------- */
+  var SEASONS = {
+    wandh:  { name: "Wandh",  gloss: "Winter", kind: "winter" },
+    sonth:  { name: "Sonth",  gloss: "Spring", kind: "spring" },
+    grishm: { name: "Grishm", gloss: "Summer", kind: "summer" },
+    harud:  { name: "Harud",  gloss: "Autumn", kind: "autumn" }
+  };
+  function seasonInfo(d) {
+    var m = d.getMonth(), y = d.getFullYear(), s, a, b;
+    if (m === 11 || m < 2) { s = SEASONS.wandh; a = new Date(m === 11 ? y : y - 1, 11, 1); b = new Date(m === 11 ? y + 1 : y, 2, 1); }
+    else if (m < 5) { s = SEASONS.sonth; a = new Date(y, 2, 1); b = new Date(y, 5, 1); }
+    else if (m < 8) { s = SEASONS.grishm; a = new Date(y, 5, 1); b = new Date(y, 8, 1); }
+    else { s = SEASONS.harud; a = new Date(y, 8, 1); b = new Date(y, 11, 1); }
+    return { s: s, p: clamp((d - a) / (b - a), 0, 1) };
+  }
+  function noteFor(d, s) {
+    var m = d.getMonth(), day = d.getDate();
+    if (s.kind === "winter") {
+      var chillai = (m === 11 && day >= 21) || (m === 0) || (m === 1 && false);
+      if ((m === 11 && day >= 21) || (m === 0 && day <= 30)) return "<b>Chillai Kalan.</b> The forty-day deep freeze runs from 21 December to 30 January. Snow sits on the Pir Panjal and the Dal can ice over.";
+      return "<b>Snow on the ranges.</b> Kangris are out, the chinars are bare, and the lake is still.";
+    }
+    if (s.kind === "spring") return m === 2 ? "<b>Thaw.</b> Almond blossom opens first, before the leaves, while snow holds on the high peaks." : "<b>Blossom and tulips.</b> Almond and cherry petals fall; the meadows turn green and the Dal fills with light.";
+    if (s.kind === "summer") return "<b>Long days.</b> Green meadows, high pastures open, and the evenings on the lake stay warm into the night.";
+    return m === 8 ? "<b>Gold creeping in.</b> The rice harvest comes in and the first chinar leaves begin to turn." : "<b>Chinars burn red.</b> Saffron fields flower at Pampore and the first snow reaches the peaks.";
+  }
+
+  /* ---------- state ---------- */
+  var today = new Date();
+  var yearStart = new Date(today.getFullYear(), 0, 1);
+  var todayIdx = clamp(Math.round((new Date(today.getFullYear(), today.getMonth(), today.getDate()) - yearStart) / 864e5), 0, 364);
+  var S = { idx: todayIdx, time: "live", hourNow: today.getHours() + today.getMinutes() / 60 };
+
+  function dateOf(idx) { return new Date(today.getFullYear(), 0, 1 + idx); }
+  function doyOf(idx) { return idx + 1; }
+  function hourOf() { return S.time === "day" ? 12.5 : S.time === "night" ? 1.2 : S.hourNow; }
+
+  function sunModel(doy, h) {
+    var rise = 6.2 - 1.1 * Math.cos(2 * Math.PI * (doy - 172) / 365), set = 24 - rise;
+    var alt, u = null, v = null, hh = h;
+    if (hh >= rise && hh <= set) { u = (hh - rise) / (set - rise); alt = Math.sin(Math.PI * u); }
+    else { var nh = hh > set ? hh - set : hh + 24 - set; v = nh / (24 - (set - rise)); alt = -Math.sin(Math.PI * v); }
+    return { rise: rise, set: set, u: u, v: v, alt: alt, dayF: sstep(-0.1, 0.28, alt), glow: Math.exp(-Math.pow(alt / 0.2, 2)), daylen: set - rise };
+  }
+  function moonPhase(d) {
+    var jd = d.getTime() / 864e5 + 2440587.5;
+    return (((jd - 2451550.1) / 29.530588853) % 1 + 1) % 1;
+  }
+
+  /* ---------- noise ---------- */
+  function rnd(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function h1(i, s) { var x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); }
+  function n1(x, s) { var i = Math.floor(x), f = x - i; f = f * f * (3 - 2 * f); return lerp(h1(i, s), h1(i + 1, s), f); }
+  function fbm(x, s) { return (n1(x, s) * 0.55 + n1(x * 2.03, s + 7) * 0.28 + n1(x * 4.1, s + 13) * 0.12 + n1(x * 8.3, s + 21) * 0.05); }
+
+  /* ---------- scene ---------- */
+  var cv = $("scene"), cx = cv.getContext("2d");
+  var W = 0, H = 0, dpr = 1, PAD = 36, yH = 0, L = {}, ST = null, parts = [], px = 0, py = 0, tx = 0, ty = 0;
+  var stars = [];
+
+  function mkLayer() { var c = document.createElement("canvas"); c.width = Math.ceil((W + PAD * 2) * dpr); c.height = Math.ceil(H * dpr); var g = c.getContext("2d"); g.scale(dpr, dpr); g.translate(PAD, 0); return { c: c, g: g }; }
+
+  function computeState() {
+    var doy = doyOf(S.idx), d = dateOf(S.idx), h = hourOf();
+    var pal = palette(doy), sun = sunModel(doy, h), si = seasonInfo(d);
+    return { doy: doy, d: d, h: h, pal: pal, sun: sun, si: si, moon: moonPhase(new Date(d.getFullYear(), d.getMonth(), d.getDate(), 21)) };
+  }
+
+  function sunPos(st) {
+    var s = st.sun;
+    if (s.u != null) return { x: lerp(0.1, 0.9, s.u) * W, y: yH - Math.sin(Math.PI * s.u) * H * 0.40 + 6, sun: true };
+    return { x: lerp(0.9, 0.12, s.v) * W, y: yH - Math.sin(Math.PI * s.v) * H * 0.36 + 6, sun: false };
+  }
+
+  function skyCols(st) {
+    var p = st.pal, s = st.sun, nT = "#091225", nB = "#1B2844";
+    var top = mix(nT, p.skyT, s.dayF), bot = mix(nB, p.skyB, s.dayF);
+    top = mix(top, "#5A6FA8", s.glow * 0.30 * (1 - s.dayF * 0.4));
+    bot = mix(bot, "#F2A26A", s.glow * 0.62);
+    return { top: top, bot: bot };
+  }
+  function nightTint(c, st, k) { return mix(c, "#0C1424", (1 - st.sun.dayF) * k); }
+
+  function buildAll() {
+    ST = computeState();
+    yH = H * (W < 700 ? 0.40 : 0.54);
+    L.bg = mkLayer(); L.mid = mkLayer(); L.fg = mkLayer();
+    drawSky(L.bg.g, ST); drawMid(L.mid.g, ST); drawFg(L.fg.g, ST);
+    seedParticles();
+    paintOnce();
+  }
+
+  function drawSky(g, st) {
+    var sc = skyCols(st), grd = g.createLinearGradient(0, 0, 0, yH + 4);
+    grd.addColorStop(0, css(sc.top)); grd.addColorStop(1, css(sc.bot));
+    g.fillStyle = grd; g.fillRect(-PAD, 0, W + PAD * 2, H);
+    var night = 1 - st.sun.dayF;
+    if (night > 0.02) {
+      var r = rnd(42); g.fillStyle = "#fff";
+      for (var i = 0; i < 190; i++) {
+        var x = r() * (W + PAD * 2) - PAD, y = Math.pow(r(), 1.5) * yH * 0.95, a = (0.25 + r() * 0.7) * night;
+        g.globalAlpha = a; g.beginPath(); g.arc(x, y, r() * 1.1 + 0.3, 0, 7); g.fill();
+      }
+      g.globalAlpha = 1;
+    }
+    var p = sunPos(st), R = Math.max(14, Math.min(W, H) * 0.035);
+    if (p.sun) {
+      var warm = mix("#FFF6DD", "#FFB46B", st.sun.glow), gl = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, R * 9);
+      gl.addColorStop(0, css(warm, 0.55 * (0.4 + st.sun.dayF * 0.6))); gl.addColorStop(1, css(warm, 0));
+      g.fillStyle = gl; g.fillRect(p.x - R * 9, p.y - R * 9, R * 18, R * 18);
+      g.fillStyle = css(mix("#FFFDF4", "#FFD9A0", st.sun.glow)); g.beginPath(); g.arc(p.x, p.y, R, 0, 7); g.fill();
+    } else {
+      var gm = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, R * 7);
+      gm.addColorStop(0, "rgba(200,215,255,.28)"); gm.addColorStop(1, "rgba(200,215,255,0)");
+      g.fillStyle = gm; g.fillRect(p.x - R * 7, p.y - R * 7, R * 14, R * 14);
+      drawMoon(g, p.x, p.y, R * 0.95, st.moon);
+    }
+  }
+  function drawMoon(g, x, y, r, ph) {
+    g.save(); g.beginPath(); g.arc(x, y, r, 0, 7); g.clip();
+    g.fillStyle = "#2B3350"; g.fillRect(x - r, y - r, r * 2, r * 2);
+    var k = Math.cos(ph * 2 * Math.PI), s = ph < 0.5 ? 1 : -1;
+    g.fillStyle = "#F4F0E2"; g.beginPath();
+    g.arc(x, y, r, -Math.PI / 2, Math.PI / 2, s < 0);
+    var rx = Math.abs(k) * r;
+    var crescent = k > 0;
+    g.ellipse(x, y, Math.max(rx, 0.01), r, 0, Math.PI / 2, -Math.PI / 2, crescent ? (s === 1) : (s === -1));
+    g.fill(); g.restore();
+  }
+
+  function ridgeY(kind, x, st) {
+    var s = kind === "far" ? 3 : 9;
+    if (kind === "far") {
+      var v = 1 - Math.abs(fbm(x / (W * 0.30) + 2.1, s) * 2 - 1);
+      return yH - H * (0.05 + 0.25 * Math.pow(v, 1.25) * (0.55 + 0.6 * fbm(x / (W * 0.8), 5)));
+    }
+    var v2 = 1 - Math.abs(fbm(x / (W * 0.22) + 7.3, s) * 2 - 1);
+    return yH - H * (0.015 + 0.105 * Math.pow(v2, 1.1) * (0.5 + 0.7 * fbm(x / (W * 0.6), 11)));
+  }
+
+  function drawRange(g, kind, col, st) {
+    var pts = [], x, y, i, p = st.pal, x0 = -PAD, x1 = W + PAD;
+    for (x = x0; x <= x1; x += 3) pts.push([x, ridgeY(kind, x, st)]);
+    g.beginPath(); g.moveTo(x0, yH + 2);
+    pts.forEach(function (q) { g.lineTo(q[0], q[1]); });
+    g.lineTo(x1, yH + 2); g.closePath(); g.fillStyle = css(col); g.fill();
+    var sd = st.sun, dir = sd.u != null ? (sd.u < 0.5 ? 1 : -1) : -1;
+    var depth = H * (kind === "far" ? 0.2 : 0.12);
+    for (i = 1; i < pts.length - 1; i++) {
+      var sl = (pts[i + 1][1] - pts[i - 1][1]) / 6;
+      var sh = clamp(sl * dir * 0.5, -0.4, 0.4);
+      g.fillStyle = sh > 0 ? "rgba(8,14,26," + (sh * (0.55 + 0.3 * (1 - sd.dayF))) + ")" : "rgba(255,246,225," + (-sh * 0.42 * sd.dayF) + ")";
+      g.fillRect(pts[i][0], pts[i][1], 3, depth);
+    }
+    var sline = yH - H * (kind === "far" ? (0.255 - 0.235 * p.snow) : (0.12 - 0.11 * p.snow));
+    if (p.snow > 0.02) {
+      var snowCol = nightTint("#F6F8FB", st, 0.55), shade = nightTint("#B9C6D8", st, 0.55);
+      g.beginPath(); var open = false;
+      for (i = 0; i < pts.length; i++) {
+        var jag = (fbm(pts[i][0] / 18, 31) - 0.5) * H * 0.045 + (fbm(pts[i][0] / 60, 5) - 0.5) * H * 0.05;
+        var lim = sline + jag, yy = pts[i][1];
+        var bot = yy < lim ? lim : yy;
+        if (!open) { g.moveTo(pts[i][0], yy); open = true; } else g.lineTo(pts[i][0], yy);
+        pts[i].b = bot;
+      }
+      for (i = pts.length - 1; i >= 0; i--) g.lineTo(pts[i][0], pts[i].b);
+      g.closePath(); g.fillStyle = css(snowCol); g.fill();
+      for (i = 1; i < pts.length - 1; i++) {
+        var s2 = (pts[i + 1][1] - pts[i - 1][1]) / 6, sh2 = clamp(s2 * dir * 0.5, 0, 0.45);
+        if (pts[i].b - pts[i][1] > 1 && sh2 > 0) { g.fillStyle = css(shade, sh2 * 1.1); g.fillRect(pts[i][0], pts[i][1], 3, pts[i].b - pts[i][1]); }
+      }
+    }
+    return pts;
+  }
+
+  function drawMid(g, st) {
+    var p = st.pal, s = st.sun, mt = mkLayerSmall();
+    var farC = nightTint(p.far, st, 0.74), midC = nightTint(p.mid, st, 0.74);
+    var haze = skyCols(st).bot;
+    drawRange(mt.g, "far", farC, st);
+    var hz = mt.g.createLinearGradient(0, yH - H * 0.2, 0, yH + 2);
+    hz.addColorStop(0, css(haze, 0)); hz.addColorStop(1, css(haze, 0.6));
+    mt.g.fillStyle = hz; mt.g.fillRect(-PAD, yH - H * 0.2, W + PAD * 2, H * 0.2 + 2);
+    var midPts = drawRange(mt.g, "mid", midC, st);
+    // deodar trees along the nearer ridge
+    var r = rnd(77), x;
+    for (x = -PAD; x < W + PAD; x += 5 + r() * 7) {
+      var yy = ridgeY("mid", x, st) + 1, hh = (5 + r() * 11) * clamp(W / 800, 0.7, 1.4);
+      var tc = nightTint(mix(p.mid, "#1E3326", 0.55 - p.snow * 0.2), st, 0.7);
+      mt.g.fillStyle = css(tc);
+      mt.g.beginPath(); mt.g.moveTo(x, yy - hh); mt.g.lineTo(x + hh * 0.26, yy); mt.g.lineTo(x - hh * 0.26, yy); mt.g.closePath(); mt.g.fill();
+      if (p.snow > 0.3) { mt.g.fillStyle = css(nightTint("#F2F5F9", st, 0.55), 0.8 * p.snow); mt.g.beginPath(); mt.g.moveTo(x, yy - hh); mt.g.lineTo(x + hh * 0.12, yy - hh * 0.55); mt.g.lineTo(x - hh * 0.12, yy - hh * 0.55); mt.g.closePath(); mt.g.fill(); }
+    }
+    var hz2 = mt.g.createLinearGradient(0, yH - H * 0.06, 0, yH + 2);
+    hz2.addColorStop(0, css(haze, 0)); hz2.addColorStop(1, css(haze, 0.4));
+    mt.g.fillStyle = hz2; mt.g.fillRect(-PAD, yH - H * 0.06, W + PAD * 2, H * 0.06 + 2);
+    // far shore meadow
+    mt.g.beginPath(); mt.g.moveTo(-PAD, yH + 3);
+    for (x = -PAD; x <= W + PAD; x += 4) mt.g.lineTo(x, yH - 2 - fbm(x / 70, 3) * H * 0.012);
+    mt.g.lineTo(W + PAD, yH + 3); mt.g.closePath();
+    mt.g.fillStyle = css(nightTint(mix(p.hill, p.mid, 0.35), st, 0.7)); mt.g.fill();
+    g.drawImage(mt.c, -PAD, 0, W + PAD * 2, H);
+    // lake
+    var lk = nightTint(p.lake, st, 0.6), sky = skyCols(st);
+    var lg = g.createLinearGradient(0, yH, 0, H);
+    lg.addColorStop(0, css(mix(lk, sky.bot, 0.35))); lg.addColorStop(0.5, css(lk)); lg.addColorStop(1, css(mix(lk, "#0B1B26", 0.35)));
+    g.fillStyle = lg; g.fillRect(-PAD, yH, W + PAD * 2, H - yH);
+    // reflection of the mountains
+    var rh = Math.min(H - yH, H * 0.36), k;
+    for (k = 0; k < rh; k += 2) {
+      var dx = Math.sin(k * 0.33) * (0.8 + k * 0.03);
+      g.globalAlpha = 0.46 * (1 - k / rh);
+      g.drawImage(mt.c, 0, (yH - k - 2) * dpr, mt.c.width, 2 * dpr, -PAD + dx, yH + k, W + PAD * 2, 2);
+    }
+    g.globalAlpha = 1;
+    // glass sheen
+    var sh = g.createLinearGradient(0, yH, 0, yH + 40);
+    sh.addColorStop(0, css(sky.bot, 0.35)); sh.addColorStop(1, css(sky.bot, 0));
+    g.fillStyle = sh; g.fillRect(-PAD, yH, W + PAD * 2, 40);
+  }
+  function mkLayerSmall() { var c = document.createElement("canvas"); c.width = Math.ceil((W + PAD * 2) * dpr); c.height = Math.ceil(H * dpr); var g = c.getContext("2d"); g.scale(dpr, dpr); g.translate(PAD, 0); return { c: c, g: g }; }
+
+  function branch(g, r, x, y, ang, len, wd, depth, tips, col) {
+    var x1 = x + Math.cos(ang) * len, y1 = y + Math.sin(ang) * len;
+    g.strokeStyle = col; g.lineWidth = Math.max(wd, 0.8); g.lineCap = "round";
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x1, y1); g.stroke();
+    if (depth === 0) { tips.push([x1, y1]); return; }
+    var n = depth > 2 ? 2 : 3;
+    for (var i = 0; i < n; i++) {
+      var a = ang + (i - (n - 1) / 2) * (0.7 + r() * 0.35) + (r() - 0.5) * 0.3;
+      branch(g, r, x1, y1, a, len * (0.7 + r() * 0.12), wd * 0.66, depth - 1, tips, col);
+    }
+    if (depth <= 2) tips.push([x1, y1]);
+  }
+
+  function drawFg(g, st) {
+    var p = st.pal, night = 1 - st.sun.dayF, small = W < 700;
+    var s = Math.min(H * (small ? 0.46 : 0.62), W * (small ? 0.78 : 0.5));
+    var bx = small ? W * 0.17 : Math.max(W * 0.1, 150), by = yH + H * (small ? 0.12 : 0.17);
+    // grassy bank on the near shore
+    var gc = nightTint(mix(p.grass, p.hill, 0.3), st, 0.65);
+    function bank(cxp, rx, ry, seed) {
+      g.beginPath(); g.moveTo(cxp - rx, by + ry * 0.6);
+      for (var t = -1; t <= 1.001; t += 0.05) {
+        var yy = by - Math.sqrt(Math.max(0, 1 - t * t)) * ry * (0.85 + fbm(t * 4, seed) * 0.3);
+        g.lineTo(cxp + t * rx, yy);
+      }
+      g.lineTo(cxp + rx, by + ry * 0.6); g.closePath();
+      g.fillStyle = css(gc); g.fill();
+      g.fillStyle = css(nightTint(mix(gc, "#000000", 0.28), st, 0.4), 0.55); g.beginPath(); g.ellipse(cxp, by + ry * 0.55, rx, ry * 0.18, 0, 0, 7); g.fill();
+    }
+    bank(bx, s * 0.55, s * 0.09, 4);
+    if (!small) bank(W - Math.max(W * 0.12, 150), s * 0.5, s * 0.07, 9);
+    // chinar
+    var rr = rnd(2024), tips = [], bark = css(mix(nightTint("#4B3A2D", st, 0.6), "#1B1410", 0.15));
+    branch(g, rr, bx, by - s * 0.02, -Math.PI / 2 + 0.06, s * 0.30, s * 0.05, 4, tips, bark);
+    if (p.snow > 0.55 && p.dens < 0.4) {
+      var r2 = rnd(2024), t2 = [];
+      g.save(); g.translate(0, -1.4); branch(g, r2, bx, by - s * 0.02, -Math.PI / 2 + 0.06, s * 0.30, s * 0.05 * 0.42, 4, t2, css(nightTint("#F6F8FB", st, 0.5), 0.9 * p.snow)); g.restore();
+    }
+    var dens = p.dens, leaf = nightTint(mix(p.leaf, mix(p.leaf, "#F4C3CF", 0.7), p.blos), st, 0.62);
+    if (dens > 0.04) {
+      var rc = rnd(99), pass, nT = tips.length;
+      for (pass = 0; pass < 3; pass++) {
+        for (var i = 0; i < nT; i++) {
+          var tp = tips[i], cnt = Math.max(1, Math.round((pass === 0 ? 4 : 3) * dens));
+          for (var j = 0; j < cnt; j++) {
+            var a = rc() * 6.283, d = rc() * s * 0.075, rad = s * (pass === 0 ? 0.062 : pass === 1 ? 0.045 : 0.026) * (0.7 + rc() * 0.6);
+            var shade = pass === 0 ? -0.22 : pass === 1 ? 0.0 : 0.2;
+            var jit = (rc() - 0.5) * 0.18;
+            var col = shade + jit < 0 ? mix(leaf, "#241A12", -(shade + jit)) : mix(leaf, "#FFF2C8", shade + jit);
+            if (p.blos > 0.4 && rc() < 0.4) col = mix(col, "#FFFFFF", 0.35);
+            g.fillStyle = css(col, 0.94);
+            var ox = Math.cos(a) * d - (pass === 2 ? s * 0.012 : 0), oy = Math.sin(a) * d * 0.8 - (pass === 2 ? s * 0.012 : 0);
+            g.beginPath(); g.arc(tp[0] + ox, tp[1] + oy, rad, 0, 7); g.fill();
+          }
+        }
+      }
+    }
+    // reeds
+    var rs = rnd(5), n = small ? 26 : 46;
+    g.lineCap = "round";
+    for (var q = 0; q < n; q++) {
+      var rx = bx + (rs() - 0.5) * s * 1.1, rh = s * (0.05 + rs() * 0.08), lean = (rs() - 0.5) * s * 0.03;
+      g.strokeStyle = css(nightTint(mix(p.grass, "#2A3A1E", 0.45), st, 0.6), 0.95); g.lineWidth = 1.2;
+      g.beginPath(); g.moveTo(rx, by + s * 0.01); g.quadraticCurveTo(rx + lean * 0.4, by - rh * 0.6, rx + lean, by - rh); g.stroke();
+      if (rs() < 0.22) { g.strokeStyle = css(nightTint("#5B3A22", st, 0.5)); g.lineWidth = 3; g.beginPath(); g.moveTo(rx + lean, by - rh); g.lineTo(rx + lean * 1.1, by - rh - s * 0.02); g.stroke(); }
+    }
+    // flowers on both banks
+    if (p.fa > 0.05) {
+      var rf = rnd(31), cnt2 = Math.round((small ? 60 : 130) * p.fa), fc = nightTint(p.flow, st, 0.55);
+      for (var f = 0; f < cnt2; f++) {
+        var side = !small && rf() < 0.35, ccx = side ? W - Math.max(W * 0.12, 150) : bx, rxs = side ? s * 0.5 : s * 0.55;
+        var fx = ccx + (rf() - 0.5) * rxs * 1.7, fy = by - rf() * s * 0.05 + s * 0.015;
+        g.fillStyle = css(mix(fc, rf() < 0.3 ? "#FFFFFF" : fc, 0.3)); g.beginPath(); g.arc(fx, fy, 1.6 + rf() * 1.8, 0, 7); g.fill();
+      }
+    }
+  }
+
+  /* ---------- particles ---------- */
+  function seedParticles() {
+    parts = [];
+    var k = ST.si.s.kind, p = ST.pal, night = 1 - ST.sun.dayF, N, i, r = Math.random;
+    function add(t, n) { for (i = 0; i < n; i++) parts.push({ t: t, x: r() * W, y: r() * H, v: 0.6 + r() * 0.8, s: r(), ph: r() * 6.28, rot: r() * 6.28, c: r() }); }
+    var small = W < 700, sc = small ? 0.6 : 1;
+    if (k === "winter") add("snow", Math.round(170 * sc));
+    else if (p.snow > 0.4 && k === "autumn") add("snow", Math.round(40 * sc * ST.si.p));
+    if (k === "spring") add("petal", Math.round(70 * sc * (0.4 + p.blos * 0.6)));
+    if (k === "autumn") add("leaf", Math.round(60 * sc));
+    if (k === "summer") add("mote", Math.round(40 * sc));
+    if (night > 0.5 && k !== "winter") add("fly", Math.round(28 * sc));
+  }
+  function drawLeaf(g, x, y, sz, rot, col) {
+    g.save(); g.translate(x, y); g.rotate(rot); g.fillStyle = col; g.beginPath();
+    for (var i = 0; i < 10; i++) { var a = i / 10 * 6.283, rr = i % 2 ? sz * 0.42 : sz; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr * 0.9); }
+    g.closePath(); g.fill(); g.restore();
+  }
+  var LEAFC = ["#C0391B", "#D6561F", "#E08A2A", "#A62B18", "#D9A33A"];
+  function stepParticles(g, dt, t) {
+    var wind = Math.sin(t * 0.0003) * 14 + 12;
+    for (var i = 0; i < parts.length; i++) {
+      var q = parts[i];
+      if (q.t === "snow") {
+        q.y += (26 + q.v * 36) * dt; q.x += (wind * 0.5 + Math.sin(t * 0.001 + q.ph) * 14) * dt;
+        g.fillStyle = "rgba(255,255,255," + (0.55 + q.s * 0.4) + ")"; g.beginPath(); g.arc(q.x, q.y, 0.9 + q.s * 2, 0, 7); g.fill();
+      } else if (q.t === "petal") {
+        q.y += (18 + q.v * 22) * dt; q.x += (wind + Math.sin(t * 0.0012 + q.ph) * 24) * dt; q.rot += dt * 1.4;
+        g.save(); g.translate(q.x, q.y); g.rotate(q.rot); g.fillStyle = q.c < 0.5 ? "rgba(247,196,212,.92)" : "rgba(255,240,244,.92)";
+        g.beginPath(); g.ellipse(0, 0, 4 + q.s * 3, 2 + q.s * 1.5, 0, 0, 7); g.fill(); g.restore();
+      } else if (q.t === "leaf") {
+        q.y += (28 + q.v * 36) * dt; q.x += (wind * 1.2 + Math.sin(t * 0.0013 + q.ph) * 34) * dt; q.rot += Math.sin(t * 0.002 + q.ph) * dt * 2;
+        drawLeaf(g, q.x, q.y, 5 + q.s * 5, q.rot, LEAFC[(q.c * 5) | 0]);
+      } else if (q.t === "mote") {
+        q.y += Math.sin(t * 0.0006 + q.ph) * 6 * dt - 3 * dt; q.x += (wind * 0.3 + Math.sin(t * 0.0009 + q.ph) * 8) * dt;
+        g.fillStyle = "rgba(255,250,225," + (0.25 + q.s * 0.35) + ")"; g.beginPath(); g.arc(q.x, q.y, 1 + q.s * 1.4, 0, 7); g.fill();
+      } else {
+        q.x += Math.sin(t * 0.0005 + q.ph) * 10 * dt; q.y += Math.cos(t * 0.0007 + q.ph) * 8 * dt;
+        var b = Math.max(0, Math.sin(t * 0.002 + q.ph * 3)); var yy = Math.max(q.y, yH * 0.9);
+        var gl = g.createRadialGradient(q.x, yy, 0, q.x, yy, 9);
+        gl.addColorStop(0, "rgba(220,255,140," + (0.85 * b) + ")"); gl.addColorStop(1, "rgba(220,255,140,0)");
+        g.fillStyle = gl; g.fillRect(q.x - 9, yy - 9, 18, 18);
+      }
+      if (q.y > H + 12) { q.y = -10; q.x = Math.random() * W; }
+      if (q.x > W + 20) q.x = -20; if (q.x < -20) q.x = W + 20;
+      if (q.t === "mote" || q.t === "fly") { if (q.y < yH * 0.5) q.y = yH * 0.5; }
+    }
+  }
+
+  /* ---------- shikara + shimmer ---------- */
+  function drawShikara(g, t, st) {
+    var s = clamp(W / 900, 0.7, 1.25), x = ((t * 0.006 * (W < 700 ? 0.7 : 1)) % (W + 260)) - 130, y = yH + H * 0.075, bob = Math.sin(t * 0.0013) * 1.2;
+    var night = 1 - st.sun.dayF, hull = css(nightTint("#2E241C", st, 0.4)), can = css(nightTint(mix("#B8552B", "#D9A441", 0.2), st, 0.55));
+    g.save(); g.translate(x, y + bob); g.scale(s, s);
+    g.globalAlpha = 0.22; g.fillStyle = "#000"; g.beginPath(); g.ellipse(0, 9, 50, 3, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+    g.fillStyle = hull; g.beginPath(); g.moveTo(-58, -6); g.quadraticCurveTo(-30, 8, 0, 8); g.quadraticCurveTo(30, 8, 58, -8); g.quadraticCurveTo(30, 0, 0, 0); g.quadraticCurveTo(-30, 0, -58, -6); g.fill();
+    g.fillStyle = can; g.fillRect(-26, -22, 44, 17);
+    g.fillStyle = css(nightTint("#F3E6C4", st, 0.55)); for (var i = 0; i < 6; i++) { g.beginPath(); g.arc(-26 + 4 + i * 7.2, -5, 3.6, 0, Math.PI); g.fill(); }
+    g.fillStyle = css(nightTint("#3A2B20", st, 0.3)); g.fillRect(-26, -24, 44, 3);
+    g.strokeStyle = hull; g.lineWidth = 1.6; g.beginPath(); g.moveTo(40, -3); g.lineTo(62, 12); g.stroke();
+    if (night > 0.5) { var gl = g.createRadialGradient(-4, -13, 0, -4, -13, 22); gl.addColorStop(0, "rgba(255,200,110,.7)"); gl.addColorStop(1, "rgba(255,200,110,0)"); g.fillStyle = gl; g.fillRect(-26, -35, 44, 44); }
+    g.restore();
+  }
+  function drawShimmer(g, t, st) {
+    var p = sunPos(st), a = 0.5 * (st.sun.u != null ? st.sun.dayF : 0.35), col = st.sun.u != null ? "255,240,205" : "200,215,255";
+    var rnd2 = rnd(8), n = 26;
+    for (var i = 0; i < n; i++) {
+      var yy = yH + 6 + i * (H * 0.3 / n) * 1.05, spread = 8 + i * 2.2, wob = Math.sin(t * 0.0016 + i * 1.7) * spread * 0.6;
+      var w = (10 + rnd2() * 26) * (1 + i * 0.03), flick = 0.45 + 0.55 * Math.sin(t * 0.003 + i * 2.3);
+      g.fillStyle = "rgba(" + col + "," + (a * flick * (1 - i / n * 0.7)) + ")"; g.fillRect(p.x + wob - w / 2 + (rnd2() - 0.5) * spread, yy, w, 1.4);
+    }
+    g.strokeStyle = "rgba(255,255,255,.09)"; g.lineWidth = 1;
+    for (i = 0; i < 12; i++) { var y3 = yH + 20 + i * H * 0.03, o = (t * 0.01 * (1 + i * 0.08)) % 120; g.beginPath(); g.moveTo(((i * 137) % W) - o, y3); g.lineTo(((i * 137) % W) - o + 40, y3); g.stroke(); }
+  }
+
+  /* ---------- frame ---------- */
+  var last = 0, running = false;
+  function compose(t, dt) {
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    px += (tx - px) * 0.06; py += (ty - py) * 0.06;
+    cx.drawImage(L.bg.c, -PAD + px * -4, 0, W + PAD * 2, H);
+    cx.drawImage(L.mid.c, -PAD + px * -10, 0, W + PAD * 2, H);
+    cx.save(); cx.beginPath(); cx.rect(0, yH, W, H - yH); cx.clip(); drawShimmer(cx, t, ST); drawShikara(cx, t, ST); cx.restore();
+    cx.drawImage(L.fg.c, -PAD + px * -20, 0, W + PAD * 2, H);
+    stepParticles(cx, dt, t);
+  }
+  function paintOnce() { compose(performance.now(), 0); }
+  function loop(now) {
+    if (!running) return;
+    var dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+    if (now - last >= 30) { last = now; compose(now, dt); }
+    requestAnimationFrame(loop);
+  }
+  function start() { if (reduce || running) return; running = true; last = performance.now(); requestAnimationFrame(loop); }
+  function stop() { running = false; }
+  document.addEventListener("visibilitychange", function () { if (document.hidden) stop(); else start(); });
+
+  function size() {
+    var nw = cv.clientWidth, nh = cv.clientHeight;
+    if (W && Math.abs(nw - W) < 2 && Math.abs(nh - H) < 120) return false;
+    W = nw; H = nh; dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    return true;
+  }
+  var rzT = 0;
+  window.addEventListener("resize", function () { clearTimeout(rzT); rzT = setTimeout(function () { if (size()) rebuild(); }, 120); });
+  window.addEventListener("pointermove", function (e) { tx = (e.clientX / innerWidth - 0.5) * 2; ty = (e.clientY / innerHeight - 0.5) * 2; });
+
+  /* ---------- UI ---------- */
+  var ringC = 2 * Math.PI * 24;
+  function fmtDur(h) { var m = Math.round(h * 60); return Math.floor(m / 60) + " h " + String(m % 60).padStart(2, "0") + " m"; }
+  var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function syncText() {
+    var st = ST, d = st.d, s = st.si.s;
+    $("sName").textContent = s.name; $("sGloss").textContent = s.gloss;
+    $("sEye").textContent = S.idx === todayIdx ? "Kashmir now" : "Kashmir on this day";
+    var r = $("ringP"); r.style.strokeDasharray = ringC; r.style.strokeDashoffset = ringC * (1 - st.si.p);
+    $("stDate").textContent = d.getDate() + " " + MON[d.getMonth()] + (S.idx === todayIdx ? "" : " (preview)");
+    $("stDay").textContent = "Day " + st.doy + " of 365";
+    $("stLight").textContent = "Daylight about " + fmtDur(st.sun.daylen);
+    $("note").innerHTML = noteFor(d, s);
+    $("scOut").textContent = S.idx === todayIdx ? "Today, " + d.getDate() + " " + MON[d.getMonth()] : d.getDate() + " " + MON[d.getMonth()];
+    var sc = $("sc"); sc.value = S.idx; sc.style.setProperty("--p", (S.idx / 364 * 100) + "%");
+    sc.setAttribute("aria-valuetext", d.getDate() + " " + MON[d.getMonth()] + ", " + s.gloss);
+  }
+  function rebuild() { buildAll(); syncText(); lattice(); }
+
+  var pend = 0;
+  $("sc").addEventListener("input", function (e) { S.idx = +e.target.value; if (!pend) pend = requestAnimationFrame(function () { pend = 0; rebuild(); }); });
+  $("bToday").addEventListener("click", function () { S.idx = todayIdx; S.time = "live"; setSeg(); rebuild(); });
+  function setSeg() { document.querySelectorAll(".seg button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.t === S.time ? "true" : "false"); }); }
+  document.querySelectorAll(".seg button").forEach(function (b) { b.addEventListener("click", function () { S.time = b.dataset.t; setSeg(); rebuild(); }); });
+  setInterval(function () { var n = new Date(); var h = n.getHours() + n.getMinutes() / 60; if (S.time === "live" && Math.abs(h - S.hourNow) >= 0.2) { S.hourNow = h; rebuild(); } }, 60000);
+
+  /* lattice ornament (a small khatam pattern) tinted to the theme */
+  function lattice() {
+    var c = document.createElement("canvas"), n = 64; c.width = c.height = n * 2; var g = c.getContext("2d"); g.scale(2, 2);
+    var ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#1C1B19";
+    g.strokeStyle = ink; g.globalAlpha = 0.13; g.lineWidth = 1; g.lineJoin = "round";
+    var R = n * 0.42, m = n / 2, k, i;
+    for (k = 0; k < 2; k++) { g.beginPath(); for (i = 0; i < 4; i++) { var a = k * Math.PI / 4 + i * Math.PI / 2 + Math.PI / 4; g.lineTo(m + Math.cos(a) * R, m + Math.sin(a) * R); } g.closePath(); g.stroke(); }
+    g.beginPath(); g.arc(m, m, R * 0.36, 0, 7); g.stroke();
+    for (i = 0; i < 8; i++) { var b = i * Math.PI / 4 + Math.PI / 8; g.beginPath(); g.moveTo(m + Math.cos(b) * R * 0.38, m + Math.sin(b) * R * 0.38); g.lineTo(m + Math.cos(b) * R * 0.95, m + Math.sin(b) * R * 0.95); g.stroke(); }
+    [[0, 0], [n, 0], [0, n], [n, n]].forEach(function (q) { g.beginPath(); for (var j = 0; j < 4; j++) { var a2 = j * Math.PI / 2; g.lineTo(q[0] + Math.cos(a2) * R * 0.36, q[1] + Math.sin(a2) * R * 0.36); } g.closePath(); g.stroke(); });
+    document.documentElement.style.setProperty("--lat", "url(" + c.toDataURL() + ")");
+    var fa = document.querySelector(".feat .art canvas");
+    if (fa) featArt(fa);
+  }
+  function featArt(c) {
+    var w = c.clientWidth || 300, h = c.clientHeight || 120, d = Math.min(2, window.devicePixelRatio || 1);
+    c.width = w * d; c.height = h * d; var g = c.getContext("2d"); g.scale(d, d);
+    var bgc = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#1C1B19";
+    g.fillStyle = bgc; g.fillRect(0, 0, w, h);
+    var cell = 56, R = cell * 0.46, ox = (w % cell) / 2, oy = (h % cell) / 2, x, y, k, i;
+    g.lineJoin = "round"; g.lineWidth = 1.6;
+    var acc = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#D4501A";
+    var line = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#E4E3DF";
+    for (y = -cell / 2 + oy; y < h + cell; y += cell) for (x = -cell / 2 + ox; x < w + cell; x += cell) {
+      g.strokeStyle = line; g.globalAlpha = 0.9;
+      for (k = 0; k < 2; k++) { g.beginPath(); for (i = 0; i < 4; i++) { var a = k * Math.PI / 4 + i * Math.PI / 2 + Math.PI / 4; g.lineTo(x + cell / 2 + Math.cos(a) * R, y + cell / 2 + Math.sin(a) * R); } g.closePath(); g.stroke(); }
+      g.globalAlpha = 1; g.fillStyle = acc; g.beginPath(); g.arc(x + cell / 2, y + cell / 2, 2.6, 0, 7); g.fill();
+    }
+  }
+
+  /* links */
+  var ICONS = {
+    star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14"/><rect x="5" y="5" width="14" height="14" transform="rotate(45 12 12)"/></svg>',
+    "in": '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9h3.4v10H5zM6.7 4a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM10.6 9h3.2v1.4c.5-.9 1.6-1.7 3.3-1.7 3.2 0 3.9 2.1 3.9 4.9V19h-3.4v-4.7c0-1.1 0-2.5-1.6-2.5s-1.8 1.2-1.8 2.4V19h-3.4z"/></svg>',
+    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg>',
+    cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.8" cy="7.2" r=".8" fill="currentColor"/></svg>',
+    book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/></svg>'
+  };
+  var CP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function renderLinks() {
+    var ul = $("links"), out = "";
+    LINKS.forEach(function (l, i) {
+      var live = !!l.url;
+      if (!live && !l.featured) return;
+      if (l.featured) {
+        var inner = '<div class="art"><canvas aria-hidden="true"></canvas></div><div class="body"><span class="tag">Featured project</span><h3>' + esc(l.title) + '</h3><p>' + esc(l.text) + '</p>' + (live ? '<span class="pill">Open the lab</span>' : '<span class="pill mute">Going live soon</span>') + '</div>';
+        out += '<li class="glass feat' + (live ? "" : " soon") + '">' + (live ? '<a class="card" href="' + esc(l.url) + '" target="_blank" rel="noopener">' + inner + '</a><button class="cp" type="button" data-i="' + i + '" aria-label="Copy link to ' + esc(l.title) + '">' + CP + '</button>' : '<div class="card">' + inner + '</div>') + '</li>';
+      } else {
+        out += '<li class="glass"><a class="card" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="ico">' + (ICONS[l.icon] || ICONS.grid) + '</span><span><h3>' + esc(l.title) + '</h3><p>' + esc(l.text) + '</p></span><span></span></a><button class="cp" type="button" data-i="' + i + '" aria-label="Copy link to ' + esc(l.title) + '">' + CP + '</button></li>';
+      }
+    });
+    ul.innerHTML = out;
+    ul.querySelectorAll(".cp").forEach(function (b) { b.addEventListener("click", function () { copy(LINKS[+b.dataset.i].url, "Link copied"); }); });
+  }
+
+  /* copy, toast, QR */
+  var tT = 0;
+  function toast(m) { var t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tT); tT = setTimeout(function () { t.classList.remove("on"); }, 1800); }
+  function copy(text, msg) {
+    function fb() { var ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} ta.remove(); toast(ok ? msg : "Select and copy: " + text); }
+    try { navigator.clipboard.writeText(text).then(function () { toast(msg); }, fb); } catch (e) { fb(); }
+  }
+  function pageUrl() { return location.href.split("#")[0]; }
+  $("bCopy").addEventListener("click", function () { copy(pageUrl(), "Page link copied"); });
+  var qrMade = false;
+  $("bQr").addEventListener("click", function () {
+    $("sheet").hidden = false; $("qrUrl").textContent = pageUrl();
+    if (!qrMade) {
+      if (window.QRCode) { new QRCode($("qr"), { text: pageUrl(), width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M }); qrMade = true; }
+      else $("qr").innerHTML = '<span style="line-height:1.4;font-size:13px;color:#333;display:block;width:200px;padding:20px 0">QR library did not load. Copy the link instead.</span>';
+    }
+    $("qClose").focus();
+  });
+  function closeSheet() { $("sheet").hidden = true; $("bQr").focus(); }
+  $("qClose").addEventListener("click", closeSheet);
+  $("sheet").addEventListener("click", function (e) { if (e.target === $("sheet")) closeSheet(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+
+  if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener && matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { setTimeout(lattice, 50); });
+  new MutationObserver(function () { setTimeout(lattice, 50); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* test hook for previews: #idx=..&t=night is not allowed in hash, so expose a tiny setter */
+  window.__lab = { set: function (idx, time) { S.idx = idx; S.time = time || "live"; setSeg(); rebuild(); } };
+
+  renderLinks();
+  size(); rebuild(); start();
+})();
+</script>
