@@ -1,5 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Saqlain Siddiqi</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Saqlain Siddiqi, B.Arch student at IUST Awantipora, Kashmir. Projects and links, over a live painting of the Kashmir valley.">
 <meta name="author" content="Saqlain Siddiqi">
 <style>
 /* Layout: a live painting of the valley fixed behind a quiet column of glass panels.
@@ -170,6 +175,8 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
 @keyframes eq { 0%, 100% { height: 4px; } 50% { height: 14px; } }
 </style>
 
+</head>
+<body>
 <canvas id="scene" aria-hidden="true"></canvas>
 
 <div class="shell">
@@ -367,7 +374,7 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
 
   /* ---------- scene ---------- */
   var cv = $("scene"), cx = cv.getContext("2d");
-  var W = 0, H = 0, dpr = 1, PAD = 36, yH = 0, L = {}, ST = null, parts = [], px = 0, py = 0, tx = 0, ty = 0;
+  var W = 0, H = 0, dpr = 1, PAD = 36, yH = 0, MH = 1, gY = 0, L = {}, ST = null, parts = [], px = 0, py = 0, tx = 0, ty = 0;
   var stars = [];
 
   function mkLayer() { var c = document.createElement("canvas"); c.width = Math.ceil((W + PAD * 2) * dpr); c.height = Math.ceil(H * dpr); var g = c.getContext("2d"); g.scale(dpr, dpr); g.translate(PAD, 0); return { c: c, g: g }; }
@@ -380,8 +387,8 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
 
   function sunPos(st) {
     var s = st.sun;
-    if (s.u != null) return { x: lerp(0.1, 0.9, s.u) * W, y: yH - Math.sin(Math.PI * s.u) * H * 0.40 + 6, sun: true };
-    return { x: lerp(0.9, 0.12, s.v) * W, y: yH - Math.sin(Math.PI * s.v) * H * 0.36 + 6, sun: false };
+    if (s.u != null) return { x: lerp(0.1, 0.9, s.u) * W, y: yH - Math.sin(Math.PI * s.u) * H * 0.40 * MH + 6, sun: true };
+    return { x: lerp(0.9, 0.12, s.v) * W, y: yH - Math.sin(Math.PI * s.v) * H * 0.36 * MH + 6, sun: false };
   }
 
   function skyCols(st) {
@@ -395,7 +402,7 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
 
   function buildAll() {
     ST = computeState();
-    yH = H * (W < 700 ? 0.40 : 0.54);
+    layoutWalk();
     L.bg = mkLayer(); L.mid = mkLayer(); L.fg = mkLayer();
     drawSky(L.bg.g, ST); drawMid(L.mid.g, ST); drawFg(L.fg.g, ST);
     seedParticles();
@@ -444,10 +451,10 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
     var s = kind === "far" ? 3 : 9;
     if (kind === "far") {
       var v = 1 - Math.abs(fbm(x / (W * 0.30) + 2.1, s) * 2 - 1);
-      return yH - H * (0.05 + 0.25 * Math.pow(v, 1.25) * (0.55 + 0.6 * fbm(x / (W * 0.8), 5)));
+      return yH - H * MH * (0.05 + 0.25 * Math.pow(v, 1.25) * (0.55 + 0.6 * fbm(x / (W * 0.8), 5)));
     }
     var v2 = 1 - Math.abs(fbm(x / (W * 0.22) + 7.3, s) * 2 - 1);
-    return yH - H * (0.015 + 0.105 * Math.pow(v2, 1.1) * (0.5 + 0.7 * fbm(x / (W * 0.6), 11)));
+    return yH - H * MH * (0.015 + 0.105 * Math.pow(v2, 1.1) * (0.5 + 0.7 * fbm(x / (W * 0.6), 11)));
   }
 
   function drawRange(g, kind, col, st) {
@@ -457,14 +464,14 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
     pts.forEach(function (q) { g.lineTo(q[0], q[1]); });
     g.lineTo(x1, yH + 2); g.closePath(); g.fillStyle = css(col); g.fill();
     var sd = st.sun, dir = sd.u != null ? (sd.u < 0.5 ? 1 : -1) : -1;
-    var depth = H * (kind === "far" ? 0.2 : 0.12);
+    var depth = H * MH * (kind === "far" ? 0.2 : 0.12);
     for (i = 1; i < pts.length - 1; i++) {
       var sl = (pts[i + 1][1] - pts[i - 1][1]) / 6;
       var sh = clamp(sl * dir * 0.5, -0.4, 0.4);
       g.fillStyle = sh > 0 ? "rgba(8,14,26," + (sh * (0.55 + 0.3 * (1 - sd.dayF))) + ")" : "rgba(255,246,225," + (-sh * 0.42 * sd.dayF) + ")";
       g.fillRect(pts[i][0], pts[i][1], 3, depth);
     }
-    var sline = yH - H * (kind === "far" ? (0.255 - 0.235 * p.snow) : (0.12 - 0.11 * p.snow));
+    var sline = yH - H * MH * (kind === "far" ? (0.255 - 0.235 * p.snow) : (0.12 - 0.11 * p.snow));
     if (p.snow > 0.02) {
       var snowCol = nightTint("#F6F8FB", st, 0.55), shade = nightTint("#B9C6D8", st, 0.55);
       g.beginPath(); var open = false;
@@ -490,9 +497,9 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
     var farC = nightTint(p.far, st, 0.74), midC = nightTint(p.mid, st, 0.74);
     var haze = skyCols(st).bot;
     drawRange(mt.g, "far", farC, st);
-    var hz = mt.g.createLinearGradient(0, yH - H * 0.2, 0, yH + 2);
+    var hz = mt.g.createLinearGradient(0, yH - H * 0.2 * MH, 0, yH + 2);
     hz.addColorStop(0, css(haze, 0)); hz.addColorStop(1, css(haze, 0.6));
-    mt.g.fillStyle = hz; mt.g.fillRect(-PAD, yH - H * 0.2, W + PAD * 2, H * 0.2 + 2);
+    mt.g.fillStyle = hz; mt.g.fillRect(-PAD, yH - H * 0.2 * MH, W + PAD * 2, H * 0.2 * MH + 2);
     var midPts = drawRange(mt.g, "mid", midC, st);
     // deodar trees along the nearer ridge
     var r = rnd(77), x;
@@ -684,15 +691,267 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
     for (i = 0; i < 12; i++) { var y3 = yH + 20 + i * H * 0.03, o = (t * 0.01 * (1 + i * 0.08)) % 120; g.beginPath(); g.moveTo(((i * 137) % W) - o, y3); g.lineTo(((i * 137) % W) - o + 40, y3); g.stroke(); }
   }
 
+
+  /* ---------- the student on the causeway ----------
+     The painting mostly sits behind glass, so the horizon drops to the clear strip above the cards
+     and a stone bund carries an architecture student across the lake. The landscape scrolls past
+     in layers while they walk; when they trip, everything stops until the tools are picked up. */
+  var off = 0, homeX = 0, U = 0.6, WK = null;
+  function layoutWalk() {
+    var base = W < 700 ? 0.40 : 0.54, sy = window.scrollY || 0;
+    var win = document.querySelector(".window"), se = document.querySelector(".season"), stp = document.querySelector(".stamp");
+    var figH = clamp(H * 0.11, 54, 96), ground, gapL = 0, gapR = 0;
+    U = figH / 100;
+    if (win && se && stp) {
+      var rw = win.getBoundingClientRect(), rs = se.getBoundingClientRect(), rt = stp.getBoundingClientRect();
+      gapL = rs.right; gapR = rt.left;
+      ground = gapR - gapL > figH * 2.4 ? rw.bottom + sy - 6 : Math.min(rs.top, rt.top) + sy - 6;
+    } else ground = H * base;
+    gY = clamp(ground, H * 0.26, H * (base + 0.04));
+    yH = gY - Math.max(10, H * 0.03);
+    MH = clamp(yH / (H * base), 0.5, 1);
+    homeX = gapR - gapL > figH * 2.4 ? (gapL + gapR) / 2 : W * 0.5;
+    if (!WK) resetWalk();
+  }
+  var ITEMS = ["laptop", "model", "scale", "tube"];
+  /* where each item rides while carried, in the torso frame (hip at 0,0, units of 1/100 figure height) */
+  var CARRY = {
+    laptop: { x: 15, y: -9, r: 0.04 },
+    model:  { x: 16, y: -13, r: 0.04 },
+    scale:  { x: 5, y: -22, r: 0.2 },
+    tube:   { x: -7, y: -21, r: -1.1 }
+  };
+  var HALF = { laptop: 1.8, model: 0, scale: 1.6, tube: 2.6 };
+  function resetWalk() {
+    WK = { ph: "walk", t: 0, dur: 8 + Math.random() * 5, spd: 0, cyc: 0, dx: 0, dir: 1, wob: 0, spike: 0, nextSpike: 2.5,
+           crouch: 0, pitch: 0.06, reach: null, items: ITEMS.map(function (k) { return { k: k, held: true, x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0, rest: false }; }), target: -1, oops: 0 };
+  }
+  function drawItem(g, k, u) {
+    g.save(); g.scale(u, u); g.lineJoin = "round";
+    if (k === "laptop") {
+      g.fillStyle = "#8E959E"; g.fillRect(-14, -1.8, 28, 3.6);
+      g.fillStyle = "#B9C0C8"; g.fillRect(-14, -1.8, 28, 1.2);
+      g.fillStyle = "#EDEFF2"; g.beginPath(); g.arc(0, 0.4, 0.8, 0, 7); g.fill();
+    } else if (k === "model") {
+      g.fillStyle = "#D8CDB8"; g.fillRect(-12, -2.4, 24, 2.4);
+      g.fillStyle = "#F4F0E7"; g.strokeStyle = "#9C9283"; g.lineWidth = 0.7;
+      g.fillRect(-10, -11, 8, 8.6); g.strokeRect(-10, -11, 8, 8.6);
+      g.fillRect(-1.5, -16, 5.5, 13.6); g.strokeRect(-1.5, -16, 5.5, 13.6);
+      g.beginPath(); g.moveTo(4.5, -2.4); g.lineTo(4.5, -8); g.lineTo(11, -5); g.lineTo(11, -2.4); g.closePath(); g.fill(); g.stroke();
+      g.strokeStyle = "#B8AE9E"; g.beginPath(); for (var j = 0; j < 4; j++) { g.moveTo(-0.6, -14 + j * 3); g.lineTo(3.2, -14 + j * 3); } g.stroke();
+    } else if (k === "scale") {
+      g.fillStyle = "#F6F3EA"; g.fillRect(-29, -1.6, 58, 3.2);
+      g.fillStyle = "#1E1E1E"; for (var i = 0; i < 6; i++) if (i % 2 === 0) g.fillRect(-29 + i * 9.6, -1.6, 9.6, 3.2);
+      g.strokeStyle = "#1E1E1E"; g.lineWidth = 0.6; g.strokeRect(-29, -1.6, 58, 3.2);
+    } else if (k === "tube") {
+      g.fillStyle = "#2F5573"; g.fillRect(-17, -2.6, 34, 5.2);
+      g.fillStyle = "#1D3A52"; g.fillRect(-17, -2.6, 3, 5.2); g.fillRect(14, -2.6, 3, 5.2);
+      g.fillStyle = "rgba(255,255,255,.22)"; g.fillRect(-14, -2.2, 28, 1.2);
+    }
+    g.restore();
+  }
+  function rotP(x, y, a) { var c = Math.cos(a), s2 = Math.sin(a); return [x * c - y * s2, x * s2 + y * c]; }
+  /* figure geometry in units: origin at the feet, y up is negative */
+  function pose(w) {
+    var amp = w.ph === "walk" ? 1 : (w.ph === "shuffle" || (w.ph === "home" && w.dx !== 0)) ? 0.7 : 0, c = w.crouch, legs = [], i;
+    for (i = 0; i < 2; i++) {
+      var ph = w.cyc + i * Math.PI;
+      var a1 = Math.sin(ph) * 0.42 * amp + c * 1.25, b = Math.max(0, Math.sin(ph + 1.3)) * 0.7 * amp + c * 2.3;
+      legs.push({ a1: a1, b: b, ext: 24 * Math.cos(a1) + 25 * Math.cos(a1 - b) });
+    }
+    var hipY = -Math.max(legs[0].ext, legs[1].ext) - Math.abs(Math.sin(w.cyc)) * 1.2 * amp;
+    return { legs: legs, hip: [0, hipY], pitch: w.pitch + c * 0.55 };
+  }
+  function torsoPt(P, x, y) { var q = rotP(x, y, P.pitch); return [P.hip[0] + q[0], P.hip[1] + q[1]]; }
+  function carriedPose(P, k, w) {
+    var c = CARRY[k], wb = Math.sin(WK.t * 3.1 + k.length) * (0.03 + w.wob) + (k === "model" ? Math.sin(WK.t * 4.3) * w.wob * 1.6 : 0);
+    var q = torsoPt(P, c.x + (k === "model" ? Math.sin(WK.t * 4.3) * w.wob * 30 : 0), c.y);
+    return { x: q[0], y: q[1], r: c.r + P.pitch + wb };
+  }
+  function toWorld(x, y) { return [homeX + WK.dx + x * U * WK.dir, gY + y * U]; }
+  function drawWalker(g, st) {
+    var w = WK, P = pose(w), u = U, dir = w.dir;
+    var tint = function (c, k) { return css(nightTint(c, st, k == null ? 0.55 : k)); };
+    var skin = tint("#C89B7B"), hair = tint("#1C1511", 0.3), pants = tint("#2C3140", 0.4), shoe = tint("#17171A", 0.2);
+    var winter = st.si.s.kind === "winter", coat = tint(winter ? "#6B4E3A" : "#B4532A"), coatD = tint(winter ? "#4E382A" : "#8E3F1F");
+    g.save(); g.translate(homeX + w.dx, gY); g.scale(dir * u, u); g.lineCap = "round"; g.lineJoin = "round";
+    g.globalAlpha = 0.25; g.fillStyle = "#000"; g.beginPath(); g.ellipse(2, 0.5, 15, 2.2, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+    function leg(L, col) {
+      var k = [P.hip[0] + Math.sin(L.a1) * 24, P.hip[1] + Math.cos(L.a1) * 24], f = [k[0] + Math.sin(L.a1 - L.b) * 25, k[1] + Math.cos(L.a1 - L.b) * 25];
+      g.strokeStyle = col; g.lineWidth = 7.5; g.beginPath(); g.moveTo(P.hip[0], P.hip[1]); g.lineTo(k[0], k[1]); g.lineTo(f[0], f[1]); g.stroke();
+      g.strokeStyle = shoe; g.lineWidth = 5.5; g.beginPath(); g.moveTo(f[0] - 1, f[1] - 1); g.lineTo(f[0] + 6, f[1] - 0.5); g.stroke();
+    }
+    var sh = torsoPt(P, 2, -30), held = w.items.filter(function (it) { return it.held; });
+    var handC = torsoPt(P, 15, -6), hand = handC;
+    if (w.reach) hand = w.reach;
+    else if (!held.length) hand = torsoPt(P, 8, 0);
+    function arm(col, back) {
+      var hx = hand[0] + (back ? -3 : 0), hy = hand[1] + (back ? 1 : 0);
+      var mx = (sh[0] + hx) / 2 - 4, my = (sh[1] + hy) / 2 + 5;
+      g.strokeStyle = col; g.lineWidth = 6.5; g.beginPath(); g.moveTo(sh[0] - (back ? 2 : 0), sh[1]); g.quadraticCurveTo(mx, my, hx, hy); g.stroke();
+      g.fillStyle = skin; g.beginPath(); g.arc(hx, hy, 2.6, 0, 7); g.fill();
+    }
+    leg(P.legs[0], tint("#22262F", 0.4));
+    var tube = w.items[3];
+    if (tube.held) { var tp = carriedPose(P, "tube", w); g.save(); g.translate(tp.x, tp.y); g.rotate(tp.r); drawItem(g, "tube", 1); g.restore(); }
+    arm(coatD, true);
+    // torso: a short jacket (a pheran in winter)
+    g.save(); g.translate(P.hip[0], P.hip[1]); g.rotate(P.pitch);
+    g.fillStyle = coat; g.beginPath();
+    g.moveTo(-7, -32); g.quadraticCurveTo(0, -35, 8, -32); g.lineTo(winter ? 11 : 9, winter ? 14 : 3); g.lineTo(winter ? -10 : -8, winter ? 14 : 3); g.closePath(); g.fill();
+    if (tube.held) { g.strokeStyle = tint("#3A2A20", 0.3); g.lineWidth = 1.6; g.beginPath(); g.moveTo(-6, -31); g.lineTo(8, -2); g.stroke(); }
+    g.restore();
+    // head
+    var hd = torsoPt(P, 1.5, -41), bob = w.ph === "oops" ? Math.sin(w.t * 9) * 0.12 : 0;
+    g.save(); g.translate(hd[0], hd[1]); g.rotate(bob + (w.crouch * 0.3));
+    g.fillStyle = skin; g.beginPath(); g.arc(0, 0, 7.2, 0, 7); g.fill();
+    g.fillStyle = hair; g.beginPath(); g.arc(-0.6, -1.6, 7.4, Math.PI * 0.95, Math.PI * 2.08); g.closePath(); g.fill();
+    g.fillStyle = tint("#1C1511", 0.3); g.beginPath(); g.arc(4.2, -0.4, 0.9, 0, 7); g.fill();
+    g.strokeStyle = tint("#2A2A2E", 0.3); g.lineWidth = 0.9; g.beginPath(); g.arc(4.2, -0.4, 2.2, 0, 7); g.stroke();
+    g.restore();
+    // carried stack, then the near leg and arm over it
+    ["scale", "laptop", "model"].forEach(function (k) {
+      var it = w.items[ITEMS.indexOf(k)]; if (!it.held) return;
+      var cp = carriedPose(P, k, w); g.save(); g.translate(cp.x, cp.y); g.rotate(cp.r); drawItem(g, k, 1); g.restore();
+    });
+    w.items.forEach(function (it) {
+      if (!it.carrying) return;
+      g.save(); g.translate(hand[0], hand[1] - HALF[it.k]); g.rotate(it.k === "tube" ? -0.3 : 0); drawItem(g, it.k, 1); g.restore();
+    });
+    leg(P.legs[1], pants);
+    arm(coat, false);
+    // a bead of effort, and a burst of surprise when it all goes
+    if (w.ph === "walk" && w.spike > 0.05) { g.fillStyle = "rgba(180,220,255," + Math.min(1, w.spike * 2) + ")"; g.beginPath(); var dy = (1 - w.spike) * 6; g.ellipse(hd[0] - 9, hd[1] - 4 + dy, 1.3, 2, 0, 0, 7); g.fill(); }
+    if (w.ph === "trip" || (w.ph === "oops" && w.t < 0.9)) {
+      g.strokeStyle = tint("#FFFFFF", 0.2); g.lineWidth = 1.6;
+      for (var i = 0; i < 3; i++) { var a = -1.9 + i * 0.45; g.beginPath(); g.moveTo(hd[0] + Math.cos(a) * 11, hd[1] + Math.sin(a) * 11); g.lineTo(hd[0] + Math.cos(a) * 16, hd[1] + Math.sin(a) * 16); g.stroke(); }
+    }
+    g.restore();
+    // loose items, in screen space
+    w.items.forEach(function (it) { if (it.held || it.carrying) return; g.save(); g.translate(it.x, it.y); g.rotate(it.r); drawItem(g, it.k, u); g.restore(); });
+  }
+  function stepWalk(dt) {
+    var w = WK; if (!w) return;
+    w.t += dt;
+    var P = pose(w);
+    function ease(v, to, k) { return v + (to - v) * Math.min(1, dt * k); }
+    if (w.ph === "walk") {
+      w.spd = ease(w.spd, 1, 1.6); w.cyc += dt * 6.2 * w.spd; w.dir = 1; w.dx = ease(w.dx, 0, 2);
+      w.crouch = ease(w.crouch, 0, 6); w.pitch = ease(w.pitch, 0.07 + Math.sin(w.t * 1.3) * 0.03, 4);
+      w.nextSpike -= dt; if (w.nextSpike <= 0) { w.spike = 1; w.nextSpike = 2.5 + Math.random() * 3; }
+      w.spike = Math.max(0, w.spike - dt * 0.9); w.wob = 0.02 + w.spike * 0.09;
+      if (w.t > w.dur) { w.ph = "trip"; w.t = 0; }
+    } else if (w.ph === "trip") {
+      w.spd = ease(w.spd, 0, 5); w.cyc += dt * 6 * w.spd; w.pitch = ease(w.pitch, 0.5, 9); w.wob = 0.2;
+      if (w.t > 0.22 && w.items.some(function (it) { return it.held; })) {
+        w.items.forEach(function (it, i) {
+          var cp = carriedPose(P, it.k, w), q = toWorld(cp.x, cp.y);
+          it.held = false; it.x = q[0]; it.y = q[1]; it.r = cp.r * w.dir; it.rest = false;
+          it.vx = w.dir * ([150, 230, -70, 70][i] + (Math.random() - 0.5) * 50) * U; it.vy = -(70 + Math.random() * 90) * U * 1.6; it.vr = (Math.random() - 0.4) * 9;
+        });
+      }
+      if (w.t > 0.7) { w.ph = "oops"; w.t = 0; }
+    } else if (w.ph === "oops") {
+      w.spd = 0; w.pitch = ease(w.pitch, -0.05, 4);
+      w.reach = w.t < 1.4 ? torsoPt(P, 9, -47) : null;
+      var settled = w.items.every(function (it) { return it.rest; });
+      if (settled && w.t > 1.6) { w.reach = null; w.ph = "fetch"; w.t = 0; }
+    } else if (w.ph === "fetch") {
+      // nearest loose item next
+      var best = -1, bd = 1e9, me = homeX + w.dx;
+      w.items.forEach(function (it, i) { if (!it.held && !it.carrying) { var d = Math.abs(it.x - me); if (d < bd) { bd = d; best = i; } } });
+      if (best < 0) { w.ph = "home"; w.t = 0; }
+      else { w.target = best; w.ph = "shuffle"; w.t = 0; }
+    } else if (w.ph === "shuffle") {
+      var it = w.items[w.target], stand = it.x - Math.sign(it.x - (homeX + w.dx) || 1) * 16 * U, d2 = stand - (homeX + w.dx);
+      w.dir = d2 >= 0 ? 1 : -1;
+      if (Math.abs(d2) < 1.5) { w.dir = it.x >= homeX + w.dx ? 1 : -1; w.ph = "bend"; w.t = 0; }
+      else { var v = Math.min(Math.abs(d2), 42 * U * dt * 3.2); w.dx += Math.sign(d2) * v; w.cyc += dt * 7; }
+      w.crouch = ease(w.crouch, 0, 6); w.pitch = ease(w.pitch, 0.08, 4);
+    } else if (w.ph === "bend") {
+      var it2 = w.items[w.target];
+      w.crouch = ease(w.crouch, 1, 5); w.pitch = ease(w.pitch, 0.2, 5);
+      var lx = (it2.x - (homeX + w.dx)) / U * w.dir, ly = (it2.y - gY) / U;
+      w.reach = [lx, ly];
+      if (w.t > 0.55) { it2.carrying = true; w.ph = "rise"; w.t = 0; }
+    } else if (w.ph === "rise") {
+      var it3 = w.items[w.target];
+      w.crouch = ease(w.crouch, 0, 4); w.pitch = ease(w.pitch, 0.06, 4);
+      var cp3 = carriedPose(P, it3.k, w), k3 = Math.min(1, w.t / 0.5);
+      var lx3 = (it3.x - (homeX + w.dx)) / U * w.dir, ly3 = (it3.y - gY) / U;
+      w.reach = [lerp(lx3, torsoPt(P, 15, -6)[0], k3), lerp(ly3, torsoPt(P, 15, -6)[1], k3)];
+      if (w.t > 0.55) { it3.carrying = false; it3.held = true; w.reach = null; w.spike = 0.6; w.ph = "fetch"; w.t = 0; }
+    } else if (w.ph === "home") {
+      var d3 = -w.dx; w.dir = d3 >= 0 ? 1 : -1;
+      if (Math.abs(d3) < 1.5) { w.dx = 0; w.dir = 1; if (w.t > 0.6) { w.ph = "walk"; w.t = 0; w.dur = 9 + Math.random() * 6; } }
+      else { w.dx += Math.sign(d3) * Math.min(Math.abs(d3), 42 * U * dt * 3.2); w.cyc += dt * 7; w.t = 0; }
+      w.pitch = ease(w.pitch, 0.06, 4); w.wob = 0.06;
+    }
+    // loose items fall, bounce and settle on the bund
+    w.items.forEach(function (it) {
+      if (it.held || it.carrying || it.rest) return;
+      it.vy += 900 * U * 1.6 * dt; it.x += it.vx * dt; it.y += it.vy * dt; it.r += it.vr * dt;
+      var floor = gY - HALF[it.k] * U;
+      if (it.y >= floor) {
+        it.y = floor;
+        if (Math.abs(it.vy) > 60 * U) { it.vy *= -0.32; it.vx *= 0.55; it.vr *= 0.5; }
+        else {
+          it.vy = 0; it.vx *= Math.pow(it.k === "tube" ? 0.4 : 0.02, dt); it.vr = 0;
+          var flat = it.k === "model" ? 0 : Math.round(it.r / Math.PI) * Math.PI;
+          it.r += (flat - it.r) * Math.min(1, dt * 12);
+          if (Math.abs(it.vx) < 4 * U) { it.vx = 0; it.vr = 0; it.r = flat; it.rest = true; }
+        }
+      }
+      it.x = clamp(it.x, 12, W - 12);
+    });
+  }
+  /* layers tile with a mirrored copy, so they scroll without a seam */
+  function drawTiled(c, o, dy) {
+    var Lw = W + PAD * 2, P2 = Lw * 2, x0 = -PAD - (((o % P2) + P2) % P2);
+    for (var k = 0; k < 3; k++) {
+      var x = x0 + k * Lw;
+      if (x > W || x + Lw < 0) continue;
+      if (k % 2 === 0) cx.drawImage(c, x, dy || 0, Lw, H);
+      else { cx.save(); cx.translate(x + Lw, 0); cx.scale(-1, 1); cx.drawImage(c, 0, dy || 0, Lw, H); cx.restore(); }
+    }
+  }
+  function drawBund(g, st) {
+    var th = Math.max(4, H * 0.008), face = Math.max(5, H * 0.011), night = 1 - st.sun.dayF;
+    var top = css(nightTint("#B9AE9C", st, 0.65)), fc = css(nightTint("#7D7263", st, 0.65)), dk = css(nightTint("#4E463C", st, 0.6));
+    g.fillStyle = "rgba(0,0,0,.18)"; g.fillRect(0, gY + face, W, face * 1.6);
+    g.fillStyle = top; g.fillRect(0, gY - th * 0.2, W, th);
+    g.fillStyle = fc; g.fillRect(0, gY + th * 0.8, W, face);
+    g.strokeStyle = dk; g.lineWidth = 1; g.beginPath();
+    var bw = 22, o = off % bw;
+    for (var x = -o; x < W + bw; x += bw) { g.moveTo(x, gY + th * 0.8); g.lineTo(x, gY + th * 0.8 + face); }
+    g.stroke();
+    // lamp posts along the bund
+    var sp = Math.max(180, W * 0.22), o2 = off % sp, ph = Math.max(26, H * 0.05);
+    for (x = -o2 + sp * 0.5; x < W + sp; x += sp) {
+      g.strokeStyle = dk; g.lineWidth = 2; g.beginPath(); g.moveTo(x, gY); g.lineTo(x, gY - ph); g.lineTo(x + 5, gY - ph); g.stroke();
+      g.fillStyle = night > 0.4 ? "rgba(255,214,140,.95)" : css(nightTint("#E9E2D2", st, 0.5)); g.beginPath(); g.arc(x + 5, gY - ph + 3, 2.6, 0, 7); g.fill();
+      if (night > 0.4) {
+        var gl = g.createRadialGradient(x + 5, gY - ph + 3, 0, x + 5, gY - ph + 3, 26);
+        gl.addColorStop(0, "rgba(255,200,120," + (0.45 * night) + ")"); gl.addColorStop(1, "rgba(255,200,120,0)");
+        g.fillStyle = gl; g.fillRect(x - 21, gY - ph - 23, 52, 52);
+        g.fillStyle = "rgba(255,200,120," + (0.22 * night) + ")"; g.fillRect(x + 3, gY + th + face, 4, ph * 0.5);
+      }
+    }
+  }
+
   /* ---------- frame ---------- */
   var last = 0, running = false;
   function compose(t, dt) {
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     px += (tx - px) * 0.06; py += (ty - py) * 0.06;
+    stepWalk(dt);
+    off += WK.spd * 34 * U / 0.6 * dt;
     cx.drawImage(L.bg.c, -PAD + px * -4, 0, W + PAD * 2, H);
-    cx.drawImage(L.mid.c, -PAD + px * -10, 0, W + PAD * 2, H);
-    cx.save(); cx.beginPath(); cx.rect(0, yH, W, H - yH); cx.clip(); drawShimmer(cx, t, ST); drawShikara(cx, t, ST); cx.restore();
-    cx.drawImage(L.fg.c, -PAD + px * -20, 0, W + PAD * 2, H);
+    drawTiled(L.mid.c, off * 0.12 + px * 10);
+    cx.save(); cx.beginPath(); cx.rect(0, yH, W, H - yH); cx.clip(); drawShimmer(cx, t, ST); cx.restore();
+    drawBund(cx, ST); drawWalker(cx, ST);
+    cx.save(); cx.beginPath(); cx.rect(0, yH, W, H - yH); cx.clip(); drawShikara(cx, t, ST); cx.restore();
+    drawTiled(L.fg.c, off * 1.7 + px * 20);
     stepParticles(cx, dt, t);
   }
   function paintOnce() { compose(performance.now(), 0); }
@@ -875,7 +1134,7 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
   new MutationObserver(function () { setTimeout(lattice, 50); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
   /* test hook for previews: #idx=..&t=night is not allowed in hash, so expose a tiny setter */
-  window.__lab = { set: function (idx, time) { S.idx = idx; S.time = time || "live"; setSeg(); rebuild(); } };
+  window.__lab = { walker: function () { return WK; }, set: function (idx, time) { S.idx = idx; S.time = time || "live"; setSeg(); rebuild(); } };
 
   /* ---------- random song on every visit ---------- */
   (function () {
@@ -907,3 +1166,5 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
   size(); rebuild(); start();
 })();
 </script>
+</body>
+</html>
