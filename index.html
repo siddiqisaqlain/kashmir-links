@@ -404,7 +404,7 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
     ST = computeState();
     layoutWalk();
     L.bg = mkLayer(); L.mid = mkLayer(); L.fg = mkLayer();
-    drawSky(L.bg.g, ST); drawMid(L.mid.g, ST); drawFg(L.fg.g, ST);
+    drawSky(L.bg.g, ST); drawMid(L.mid.g, ST); drawFg(L.fg.g, ST); buildSkyline(ST);
     seedParticles();
     paintOnce();
   }
@@ -692,6 +692,113 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
   }
 
 
+
+  /* ---------- downtown Srinagar on the far shore ----------
+     Silhouettes of Hari Parbat with its fort and Makhdoom Sahib, Jamia Masjid, Khanqah-e-Moula,
+     the Budshah Tomb and Pather Masjid, strung between old houses and poplars. One tile is drawn once,
+     wide enough not to repeat on screen, and scrolls at its own depth between the mountains and the bund. */
+  var SKU = 1, SKTOP = 92;
+  function buildSkyline(st) {
+    var p = st.pal, night = 1 - st.sun.dayF, haze = skyCols(st).bot;
+    SKU = clamp(H * MH * 0.0022, 0.6, 1.5);
+    var u = SKU, r = rnd(1990);
+    var wall = mix(nightTint(mix(p.mid, "#9A9084", 0.5), st, 0.72), haze, 0.16);
+    var roof = mix(wall, "#1E2228", 0.32), dark = mix(wall, "#14171C", 0.5), lite = mix(wall, "#FFFFFF", 0.12);
+    var brick = mix(mix(nightTint("#8A5A44", st, 0.72), haze, 0.16), wall, 0.25), wood = mix(mix(nightTint("#6E4B33", st, 0.72), haze, 0.16), wall, 0.2);
+    var hill = mix(mix(nightTint(mix(p.hill, p.mid, 0.5), st, 0.72), haze, 0.14), "#000000", 0.12);
+    var lamp = night > 0.45;
+    var seq = [], fixed = 0;
+    var MARKS = ["khanqah", "jamia", "budshah", "hari", "pather"], WIDE = { khanqah: 52, jamia: 128, budshah: 46, hari: 230, pather: 58 };
+    MARKS.forEach(function (m) { fixed += WIDE[m]; });
+    var total = Math.max((W * 1.5) / u, fixed + 300), fill = (total - fixed) / MARKS.length;
+    MARKS.forEach(function (m) { seq.push({ k: "town", w: fill * (0.7 + r() * 0.6) }); seq.push({ k: m, w: WIDE[m] }); });
+    var TWu = 0; seq.forEach(function (q) { TWu += q.w; });
+    var c = document.createElement("canvas"), cw = Math.ceil(TWu * u), chh = Math.ceil(SKTOP * u) + 4;
+    c.width = Math.ceil(cw * dpr); c.height = Math.ceil(chh * dpr);
+    var g = c.getContext("2d"); g.scale(dpr, dpr); g.translate(0, chh - 2); g.scale(u, u);
+    function F(col) { g.fillStyle = css(col); }
+    function win(x, y, w, h) { if (lamp && r() < 0.42) { g.fillStyle = "rgba(255,206,130," + (0.55 + r() * 0.4) * night + ")"; } else g.fillStyle = css(dark, 0.55); g.fillRect(x, y, w, h); }
+    function pyr(x, y, wb, wt, h) { g.beginPath(); g.moveTo(x - wb / 2, y); g.lineTo(x - wt / 2, y - h); g.lineTo(x + wt / 2, y - h); g.lineTo(x + wb / 2, y); g.closePath(); g.fill(); }
+    function spire(x, y, h) { F(dark); g.fillRect(x - 0.7, y - h, 1.4, h); g.beginPath(); g.arc(x, y - h, 1.3, 0, 7); g.fill(); }
+    function house(x) {
+      var w = 13 + r() * 13, h = 11 + r() * 13, rh = 6 + r() * 6;
+      F(r() < 0.3 ? brick : wall); g.fillRect(x, -h, w, h);
+      F(roof); if (r() < 0.55) pyr(x + w / 2, -h, w + 3, 0.5, rh); else { g.beginPath(); g.moveTo(x - 2, -h); g.lineTo(x + w / 2, -h - rh); g.lineTo(x + w + 2, -h); g.closePath(); g.fill(); }
+      if (r() < 0.45) { F(wood); g.fillRect(x + w * 0.25, -h * 0.72, w * 0.5, h * 0.22); }
+      for (var fy = -h + 3; fy < -4; fy += 6) for (var fx = x + 2.5; fx < x + w - 3; fx += 5) win(fx, fy, 2, 2.6);
+      return w;
+    }
+    function poplar(x) { var h = 22 + r() * 16; F(mix(hill, "#22301F", 0.3)); g.beginPath(); g.ellipse(x, -h / 2, 2.6, h / 2, 0, 0, 7); g.fill(); return 5; }
+    var x = 0;
+    seq.forEach(function (q) {
+      var x0 = x, k = q.k, cxm = x0 + q.w / 2;
+      if (k === "town") {
+        var xx = x0 + 2;
+        while (xx < x0 + q.w - 14) { if (r() < 0.16) xx += poplar(xx + 3) + 2; else xx += house(xx) + 1 + r() * 4; }
+      } else if (k === "khanqah") {
+        // Khanqah-e-Moula: wooden two-storey hall, tiered pyramidal roof, open pavilion and a tall spire
+        F(dark); g.fillRect(x0 + 2, -3, 48, 3);
+        F(wood); g.fillRect(x0 + 5, -19, 42, 16); g.fillRect(x0 + 7, -31, 38, 12);
+        F(dark); for (var a = 0; a < 7; a++) g.fillRect(x0 + 9 + a * 5.4, -29, 1, 9);
+        for (a = 0; a < 6; a++) g.fillRect(x0 + 9 + a * 6.6, -16, 2.4, 9);
+        F(roof); pyr(cxm, -31, 50, 22, 9);
+        F(wood); g.fillRect(cxm - 6, -48, 12, 8); F(dark); g.fillRect(cxm - 3, -47, 1, 6); g.fillRect(cxm + 2, -47, 1, 6);
+        F(roof); pyr(cxm, -48, 15, 0.5, 9); spire(cxm, -57, 20);
+      } else if (k === "jamia") {
+        // Jamia Masjid: long brick enclosure with pagoda-style spires, the largest over the main hall
+        F(brick); g.fillRect(x0 + 2, -15, 124, 15);
+        F(dark); for (a = 0; a < 20; a++) g.fillRect(x0 + 6 + a * 6, -11, 2.4, 6);
+        [[20, 0.8], [64, 1.15], [108, 0.8]].forEach(function (tw) {
+          var tx = x0 + tw[0], z = tw[1];
+          F(wood); g.fillRect(tx - 9 * z, -15 - 10 * z, 18 * z, 10 * z);
+          F(roof); pyr(tx, -15 - 10 * z, 26 * z, 15 * z, 5 * z);
+          F(wood); g.fillRect(tx - 6 * z, -30 * z - 15 + 10 * z, 12 * z, 4 * z);
+          F(roof); pyr(tx, -15 - 19 * z, 17 * z, 0.5, 7 * z); spire(tx, -15 - 26 * z, 12 * z);
+        });
+      } else if (k === "budshah") {
+        // Budshah Tomb: brick tomb with a central dome and smaller corner domes
+        F(brick); g.fillRect(x0 + 3, -18, 40, 18);
+        F(dark); for (a = 0; a < 4; a++) { g.beginPath(); g.moveTo(x0 + 7 + a * 9, -2); g.lineTo(x0 + 7 + a * 9, -10); g.arc(x0 + 9.5 + a * 9, -10, 2.5, Math.PI, 0); g.lineTo(x0 + 12 + a * 9, -2); g.fill(); }
+        F(brick); g.fillRect(cxm - 9, -24, 18, 6);
+        F(roof); g.beginPath(); g.arc(cxm, -24, 10, Math.PI, 0); g.fill(); spire(cxm, -34, 4);
+        [x0 + 8, x0 + 38].forEach(function (dx) { F(brick); g.fillRect(dx - 3.5, -22, 7, 4); F(roof); g.beginPath(); g.arc(dx, -22, 4, Math.PI, 0); g.fill(); });
+      } else if (k === "hari") {
+        // Hari Parbat: the hill, Koh-e-Maran fort along the crest, Makhdoom Sahib's shrine on the slope
+        F(hill); g.beginPath(); g.moveTo(x0, 0);
+        for (var t = 0; t <= 1.0001; t += 0.02) { var hy = Math.pow(Math.sin(Math.PI * t), 0.75) * 60 * (0.92 + fbm(t * 6, 17) * 0.16); g.lineTo(x0 + t * q.w, -hy); }
+        g.lineTo(x0 + q.w, 0); g.closePath(); g.fill();
+        F(mix(hill, "#000000", 0.15)); for (a = 0; a < 26; a++) { var ta = 0.1 + r() * 0.8, th = Math.pow(Math.sin(Math.PI * ta), 0.75) * 60 * r() * 0.9; g.beginPath(); g.arc(x0 + ta * q.w, -th, 1.6 + r() * 1.6, 0, 7); g.fill(); }
+        var fx0 = x0 + q.w * 0.36, fx1 = x0 + q.w * 0.66, fy = -60 * 0.97;
+        F(lite); g.fillRect(fx0, fy - 9, fx1 - fx0, 11);
+        for (a = fx0; a < fx1 - 2; a += 4) g.fillRect(a, fy - 11, 2.2, 2);
+        [fx0, fx1, (fx0 + fx1) / 2].forEach(function (bx, i) { F(lite); g.fillRect(bx - 4.5, fy - (i === 2 ? 17 : 14), 9, i === 2 ? 19 : 16); F(dark); g.fillRect(bx - 1, fy - (i === 2 ? 13 : 10), 2, 3); for (var cr = -4.5; cr < 4; cr += 3) { F(lite); g.fillRect(bx + cr, fy - (i === 2 ? 19 : 16), 1.8, 2); } });
+        var mx = x0 + q.w * 0.2, my = -Math.pow(Math.sin(Math.PI * 0.2), 0.75) * 60 * 0.95 + 2;
+        F(lite); g.fillRect(mx - 9, my - 8, 18, 8); F(roof); pyr(mx, my - 8, 22, 10, 4); F(lite); g.fillRect(mx - 4, my - 15, 8, 3); F(roof); pyr(mx, my - 15, 11, 0.5, 5); spire(mx, my - 20, 6);
+        for (a = 0; a < 6; a++) win(mx - 7 + a * 2.6, my - 6, 1.4, 3);
+      } else if (k === "pather") {
+        // Pather Masjid: low limestone mosque, a row of arches under a shallow roof
+        var st2 = mix(lite, "#B9B0A0", 0.2);
+        F(st2); g.fillRect(x0 + 3, -16, 52, 16);
+        F(dark); for (a = 0; a < 9; a++) { var ax = x0 + 6 + a * 5.6; g.beginPath(); g.moveTo(ax, 0); g.lineTo(ax, -8); g.arc(ax + 2, -8, 2, Math.PI, 0); g.lineTo(ax + 4, 0); g.fill(); }
+        F(roof); pyr(cxm, -16, 58, 30, 6);
+      }
+      x += q.w;
+    });
+    // the shore wall everything stands on
+    F(mix(wall, "#000000", 0.25)); g.fillRect(0, -1, TWu, 3);
+    L.sky = { c: c, w: cw, h: chh };
+  }
+  function drawSkyline(o) {
+    if (!L.sky) return;
+    var S2 = L.sky, x0 = -(((o % S2.w) + S2.w) % S2.w), top = yH + 2 - S2.h;
+    for (var x = x0; x < W; x += S2.w) cx.drawImage(S2.c, x, top, S2.w, S2.h);
+    // faint reflection in the lake
+    cx.save(); cx.beginPath(); cx.rect(0, yH, W, S2.h); cx.clip(); cx.globalAlpha = 0.22;
+    cx.translate(0, 2 * yH + 2); cx.scale(1, -1);
+    for (x = x0; x < W; x += S2.w) cx.drawImage(S2.c, x, top, S2.w, S2.h);
+    cx.restore();
+  }
+
   /* ---------- the student on the causeway ----------
      The painting mostly sits behind glass, so the horizon drops to the clear strip above the cards
      and a stone bund carries an architecture student across the lake. The landscape scrolls past
@@ -948,6 +1055,7 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
     off += WK.spd * 34 * U / 0.6 * dt;
     cx.drawImage(L.bg.c, -PAD + px * -4, 0, W + PAD * 2, H);
     drawTiled(L.mid.c, off * 0.12 + px * 10);
+    drawSkyline(off * 0.35 + px * 14);
     cx.save(); cx.beginPath(); cx.rect(0, yH, W, H - yH); cx.clip(); drawShimmer(cx, t, ST); cx.restore();
     drawBund(cx, ST); drawWalker(cx, ST);
     cx.save(); cx.beginPath(); cx.rect(0, yH, W, H - yH); cx.clip(); drawShikara(cx, t, ST); cx.restore();
