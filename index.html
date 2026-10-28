@@ -88,7 +88,7 @@ button { font: inherit; color: inherit; }
 
 .links { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; min-width: 0; }
 .links li { position: relative; }
-.card { display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; padding: 14px 56px 14px 14px; color: inherit; text-decoration: none; min-height: 72px; transition: transform .16s ease, border-color .16s; }
+.card { display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; padding: 14px 100px 14px 14px; color: inherit; text-decoration: none; min-height: 72px; transition: transform .16s ease, border-color .16s; }
 .card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .card:active { transform: scale(.985); }
 .card .ico { width: 44px; height: 44px; border-radius: 12px; background: var(--ink); color: var(--bg); display: grid; place-items: center; }
@@ -99,12 +99,13 @@ button { font: inherit; color: inherit; }
 .cp { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: var(--ink3); cursor: pointer; display: grid; place-items: center; }
 .cp:hover { background: var(--glass2); color: var(--ink); }
 .cp svg { width: 17px; height: 17px; }
+.cp.qb { right: 54px; }
 .card .go { display: none; }
 .feat { padding: 0; overflow: hidden; }
 .feat .card { grid-template-columns: 1fr; padding: 0; }
 .feat .art { height: 120px; position: relative; background: var(--ink); }
 .feat .art canvas { width: 100%; height: 100%; display: block; }
-.feat .body { padding: 14px 56px 16px 16px; display: grid; gap: 3px; }
+.feat .body { padding: 14px 100px 16px 16px; display: grid; gap: 3px; }
 .feat .tag { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
 .feat h3 { font-size: 20px; letter-spacing: -.02em; }
 .feat.soon .card { cursor: default; }
@@ -136,6 +137,8 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
 .sheet #qr { background: #fff; padding: 14px; border-radius: 14px; line-height: 0; }
 .sheet #qr canvas, .sheet #qr img { width: 200px; height: 200px; max-width: 100%; }
 .sheet small { color: var(--ink2); font-size: 12px; overflow-wrap: anywhere; }
+.sheet h3 { font-size: 18px; font-weight: 600; letter-spacing: -.01em; margin-top: -6px; }
+.sheet .acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: 13px; font-weight: 550; z-index: 30; transition: .22s; pointer-events: none; }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -223,9 +226,14 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-label="QR code">
   <div class="box">
     <p class="eyebrow">Scan to open</p>
+    <h3 id="qrTitle"></h3>
     <div id="qr"></div>
     <small id="qrUrl"></small>
-    <button class="btn" id="qClose" type="button">Close</button>
+    <div class="acts">
+      <button class="btn" id="qDl" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download</button>
+      <button class="btn" id="qShare" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg>Share</button>
+      <button class="btn" id="qClose" type="button">Close</button>
+    </div>
   </div>
 </div>
 <div class="player glass" id="player" hidden>
@@ -773,6 +781,8 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
     cam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.8" cy="7.2" r=".8" fill="currentColor"/></svg>',
     book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/></svg>'
   };
+  var QRI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20v1"/></svg>';
+  function qrBtn(l, i) { return '<button class="cp qb" type="button" data-i="' + i + '" aria-label="QR code for ' + esc(l.title) + '">' + QRI + '</button>'; }
   var CP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function renderLinks() {
@@ -782,13 +792,14 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
       if (!live && !l.featured) return;
       if (l.featured) {
         var inner = '<div class="art"><canvas aria-hidden="true"></canvas></div><div class="body"><span class="tag">Featured project</span><h3>' + esc(l.title) + '</h3><p>' + esc(l.text) + '</p>' + (live ? '<span class="pill">Open the lab</span>' : '<span class="pill mute">Going live soon</span>') + '</div>';
-        out += '<li class="glass feat' + (live ? "" : " soon") + '">' + (live ? '<a class="card" href="' + esc(l.url) + '" target="_blank" rel="noopener">' + inner + '</a><button class="cp" type="button" data-i="' + i + '" aria-label="Copy link to ' + esc(l.title) + '">' + CP + '</button>' : '<div class="card">' + inner + '</div>') + '</li>';
+        out += '<li class="glass feat' + (live ? "" : " soon") + '">' + (live ? '<a class="card" href="' + esc(l.url) + '" target="_blank" rel="noopener">' + inner + '</a>' + qrBtn(l, i) + '<button class="cp" type="button" data-i="' + i + '" aria-label="Copy link to ' + esc(l.title) + '">' + CP + '</button>' : '<div class="card">' + inner + '</div>') + '</li>';
       } else {
-        out += '<li class="glass"><a class="card" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="ico">' + (ICONS[l.icon] || ICONS.grid) + '</span><span><h3>' + esc(l.title) + '</h3><p>' + esc(l.text) + '</p></span><span></span></a><button class="cp" type="button" data-i="' + i + '" aria-label="Copy link to ' + esc(l.title) + '">' + CP + '</button></li>';
+        out += '<li class="glass"><a class="card" href="' + esc(l.url) + '" target="_blank" rel="noopener"><span class="ico">' + (ICONS[l.icon] || ICONS.grid) + '</span><span><h3>' + esc(l.title) + '</h3><p>' + esc(l.text) + '</p></span><span></span></a>' + qrBtn(l, i) + '<button class="cp" type="button" data-i="' + i + '" aria-label="Copy link to ' + esc(l.title) + '">' + CP + '</button></li>';
       }
     });
     ul.innerHTML = out;
-    ul.querySelectorAll(".cp").forEach(function (b) { b.addEventListener("click", function () { copy(LINKS[+b.dataset.i].url, "Link copied"); }); });
+    ul.querySelectorAll(".cp:not(.qb)").forEach(function (b) { b.addEventListener("click", function () { copy(LINKS[+b.dataset.i].url, "Link copied"); }); });
+    ul.querySelectorAll(".qb").forEach(function (b) { b.addEventListener("click", function () { var l = LINKS[+b.dataset.i]; openQr(l.title, l.url, b); }); });
   }
 
   /* copy, toast, QR */
@@ -800,16 +811,62 @@ footer span { display: inline-block; padding: 8px 14px; border-radius: 99px; bac
   }
   function pageUrl() { return location.href.split("#")[0]; }
   $("bCopy").addEventListener("click", function () { copy(pageUrl(), "Page link copied"); });
-  var qrMade = false;
-  $("bQr").addEventListener("click", function () {
-    $("sheet").hidden = false; $("qrUrl").textContent = pageUrl();
-    if (!qrMade) {
-      if (window.QRCode) { new QRCode($("qr"), { text: pageUrl(), width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M }); qrMade = true; }
-      else $("qr").innerHTML = '<span style="line-height:1.4;font-size:13px;color:#333;display:block;width:200px;padding:20px 0">QR library did not load. Copy the link instead.</span>';
-    }
-    $("qClose").focus();
+  /* One QR sheet serves the page and every link; Download saves a labelled card, Share sends it */
+  var qrCur = null, qrBack = null;
+  function qrCanvas(url, px) {
+    var d = document.createElement("div");
+    new QRCode(d, { text: url, width: px, height: px, correctLevel: QRCode.CorrectLevel.M });
+    return d.querySelector("canvas");
+  }
+  function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "link"; }
+  function qrCard(title, url) {
+    var q = 640, pad = 80, W = q + pad * 2, H = q + pad * 2 + 150;
+    var c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d");
+    x.fillStyle = "#fff"; x.fillRect(0, 0, W, H);
+    x.imageSmoothingEnabled = false;
+    x.drawImage(qrCanvas(url, q), pad, pad, q, q);
+    var shown = url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+    x.textAlign = "center"; x.fillStyle = "#1B1B1A";
+    x.font = "700 44px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif";
+    x.fillText(title, W / 2, q + pad + 70, W - 60);
+    x.fillStyle = "#6A6A66";
+    x.font = "400 26px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif";
+    x.fillText(shown, W / 2, q + pad + 118, W - 60);
+    return c;
+  }
+  function openQr(title, url, from) {
+    qrCur = { title: title, url: url }; qrBack = from || null;
+    $("qrTitle").textContent = title; $("qrUrl").textContent = url;
+    var box = $("qr"); box.innerHTML = "";
+    var ok = !!window.QRCode;
+    if (ok) new QRCode(box, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+    else box.innerHTML = '<span style="line-height:1.4;font-size:13px;color:#333;display:block;width:200px;padding:20px 0">QR library did not load. Copy the link instead.</span>';
+    $("qDl").hidden = !ok;
+    /* Made now, so Share can hand over the file inside the tap, as iOS Safari requires */
+    if (ok) { var cur = qrCur; qrCard(title, url).toBlob(function (b) { if (b && cur === qrCur) cur.blob = b; }, "image/png"); }
+    $("sheet").hidden = false; $("qClose").focus();
+  }
+  $("bQr").addEventListener("click", function () { openQr("Saqlain Siddiqi", pageUrl(), $("bQr")); });
+  $("qDl").addEventListener("click", function () {
+    var a = document.createElement("a"), b = qrCur.blob;
+    a.href = b ? URL.createObjectURL(b) : qrCard(qrCur.title, qrCur.url).toDataURL("image/png");
+    a.download = slug(qrCur.title) + "-qr.png";
+    document.body.appendChild(a); a.click(); a.remove();
+    if (b) setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    toast("QR code saved");
   });
-  function closeSheet() { $("sheet").hidden = true; $("bQr").focus(); }
+  $("qShare").addEventListener("click", function () {
+    var cur = qrCur, data = { title: cur.title, text: cur.title, url: cur.url };
+    function linkOnly() {
+      if (navigator.share) navigator.share(data).catch(function () {});
+      else copy(cur.url, "Link copied");
+    }
+    var f = cur.blob && window.File && new File([cur.blob], slug(cur.title) + "-qr.png", { type: "image/png" });
+    if (f && navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], title: cur.title, text: cur.title + " " + cur.url }).catch(function () {});
+    else linkOnly();
+  });
+  function closeSheet() { $("sheet").hidden = true; (qrBack || $("bQr")).focus(); }
   $("qClose").addEventListener("click", closeSheet);
   $("sheet").addEventListener("click", function (e) { if (e.target === $("sheet")) closeSheet(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
